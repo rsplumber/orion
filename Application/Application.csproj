@@ -23,6 +23,16 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
     </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Core\Core.csproj" />
+      <ProjectReference Include="..\Data.Sql\Data.Sql.csproj" />
+      <ProjectReference Include="..\Queries\Queries.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Files" />
+    </ItemGroup>
     
     
 

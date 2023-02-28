@@ -1,3 +1,4 @@
+using Application;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 
@@ -15,6 +16,8 @@ builder.Services.AddSwaggerDoc(settings =>
     settings.Version = "v1";
 }, addJWTBearerAuth: false, maxEndpointVersion: 1);
 
+
+builder.Services.AddObjectStorageService(builder.Configuration);
 
 var app = builder.Build();
 
