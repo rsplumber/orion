@@ -7,11 +7,11 @@ namespace Core.Files.Services;
 public class FileService : IFileService
 {
     private readonly IFileRepository _fileRepository;
-    private readonly IStorageService _storageService;
+    private readonly IEnumerable<IStorageService> _storageService;
     private readonly ICapPublisher _capPublisher;
 
 
-    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IStorageService storageService)
+    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IEnumerable<IStorageService> storageService)
     {
         _fileRepository = fileRepository;
         _capPublisher = capPublisher;
@@ -20,20 +20,26 @@ public class FileService : IFileService
 
     public async Task PutAsync(PutFileRequest req, CancellationToken cancellationToken)
     {
-        await using (var fs = System.IO.File.Open(req.FilePath, FileMode.Open))
+        // await using (var fs = System.IO.File.Open(req.FilePath, FileMode.Open))
+        // {
+        //     await _fileRepository.AddAsync(new File
+        //     {
+        //         Name = req.Name,
+        //         Metas = new Dictionary<string, string>
+        //         {
+        //             {"Extension", req.Extension},
+        //             {"ContentType", req.ContentType}
+        //         }
+        //     }, cancellationToken);
+        // }
+
+        var provider = _storageService.FirstOrDefault(service => service.ProviderName == "minio");
+        if (provider is null)
         {
-            await _fileRepository.AddAsync(new File
-            {
-                Name = req.Name,
-                Metas = new Dictionary<string, string>
-                {
-                    {"Extension", req.Extension},
-                    {"ContentType", req.ContentType}
-                }
-            }, cancellationToken);
+            throw new ArgumentException("provider not found");
         }
 
-        var result = await _storageService.PutAsync(new PutObject
+        var result = await provider.PutAsync(new PutObject
         {
             Name = req.Name,
             ContentType = req.ContentType,

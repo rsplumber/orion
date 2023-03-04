@@ -27,6 +27,7 @@
     <ItemGroup>
       <ProjectReference Include="..\Core\Core.csproj" />
       <ProjectReference Include="..\Data.Sql\Data.Sql.csproj" />
+      <ProjectReference Include="..\MinIO.Storage\MinIO.Storage.csproj" />
       <ProjectReference Include="..\Queries\Queries.csproj" />
     </ItemGroup>
 

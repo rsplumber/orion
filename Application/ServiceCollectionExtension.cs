@@ -1,5 +1,6 @@
 ﻿using Core.Files.Services;
 using Data.Sql;
+using MinIO;
 using Savorboard.CAP.InMemoryMessageQueue;
 
 namespace Application;
@@ -17,5 +18,7 @@ internal static class ServiceCollectionExtension
             x.UseInMemoryStorage();
             x.UseDashboard();
         });
+
+        services.AddMinio(configuration);
     }
 }

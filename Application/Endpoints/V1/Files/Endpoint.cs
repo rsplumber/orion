@@ -24,8 +24,8 @@ internal sealed class Endpoint : Endpoint<Request>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var fileExtension = Path.GetExtension(req.File.FileName);
-        var fileName = Guid.NewGuid() + req.File.FileName;
-        var filePath = Path.Combine(".\\Files", fileName + fileExtension);
+        var fileName = Guid.NewGuid() + "_" + req.File.FileName;
+        var filePath = Path.Combine(".\\Files", fileName);
 
 
         if (req.File.Length > 0)
@@ -38,7 +38,7 @@ internal sealed class Endpoint : Endpoint<Request>
         {
             Name = fileName,
             FilePath = filePath,
-            Extension = Path.GetExtension(req.File.FileName),
+            Extension = fileExtension,
             ContentType = req.File.ContentType
         };
 
