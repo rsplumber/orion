@@ -24,7 +24,8 @@ internal sealed class Endpoint : Endpoint<Request>
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
         var fileExtension = Path.GetExtension(req.File.FileName);
-        var filePath = Path.Combine(".\\Files", Guid.NewGuid().ToString() + fileExtension);
+        var fileName = Guid.NewGuid() + req.File.FileName;
+        var filePath = Path.Combine(".\\Files", fileName + fileExtension);
 
 
         if (req.File.Length > 0)
@@ -35,9 +36,10 @@ internal sealed class Endpoint : Endpoint<Request>
 
         var request = new PutFileRequest
         {
+            Name = fileName,
             FilePath = filePath,
             Extension = Path.GetExtension(req.File.FileName),
-            Mime = req.File.ContentType
+            ContentType = req.File.ContentType
         };
 
         await _fileService.PutAsync(request, ct);

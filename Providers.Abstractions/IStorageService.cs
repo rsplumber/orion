@@ -2,7 +2,11 @@ namespace Providers.Abstractions;
 
 public interface IStorageService
 {
-    Task<string> PutAsync(Credential credential, PutObject obj);
+    public string ProviderName { get; }
+    public string AccessKey { get; }
+    public string SecretKey { get; }
+
+    Task<string> PutAsync(PutObject obj);
 
     Task<string> GetAsync(GetObject obj);
 
