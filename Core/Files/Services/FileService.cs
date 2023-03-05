@@ -1,4 +1,5 @@
 ﻿using Core.Files.Events;
+using Core.Files.Exceptions;
 using DotNetCore.CAP;
 using Providers.Abstractions;
 
@@ -20,32 +21,35 @@ public class FileService : IFileService
 
     public async Task PutAsync(PutFileRequest req, CancellationToken cancellationToken)
     {
-        // await using (var fs = System.IO.File.Open(req.FilePath, FileMode.Open))
-        // {
-        //     await _fileRepository.AddAsync(new File
-        //     {
-        //         Name = req.Name,
-        //         Metas = new Dictionary<string, string>
-        //         {
-        //             {"Extension", req.Extension},
-        //             {"ContentType", req.ContentType}
-        //         }
-        //     }, cancellationToken);
-        // }
-
         var provider = _storageService.FirstOrDefault(service => service.ProviderName == "minio");
         if (provider is null)
         {
-            throw new ArgumentException("provider not found");
+            throw new ProviderNotFoundException();
         }
 
-        var result = await provider.PutAsync(new PutObject
+        var fileAddress = await provider.PutAsync(new PutObject
         {
             Name = req.Name,
             ContentType = req.ContentType,
             Path = req.FilePath,
-            BucketName = "default",
         });
+
+        System.IO.File.Delete(req.FilePath);
+
+        await _fileRepository.AddAsync(new File
+        {
+            Name = req.Name,
+            Metas = new Dictionary<string, string>
+            {
+                {"Extension", req.Extension},
+                {"ContentType", req.ContentType}
+            },
+            Locations = new Dictionary<string, string>()
+            {
+                {"local", fileAddress}
+            }
+        }, cancellationToken);
+
 
         //todo put to MinIo
         //todo put MinIo fileAddress to file.location
@@ -61,8 +65,18 @@ public class FileService : IFileService
         throw new NotImplementedException();
     }
 
-    public async Task GetAsync(GetFileRequest req, CancellationToken cancellationToken = default)
+    public async Task<MemoryStream> GetAsync(GetFileRequest req, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var provider = _storageService.FirstOrDefault(service => service.ProviderName == "minio");
+
+        if (provider is null)
+        {
+            throw new ProviderNotFoundException();
+        }
+
+        return await provider.GetAsync(new GetObject()
+        {
+            Name = req.Name,
+        });
     }
 }

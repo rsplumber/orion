@@ -6,5 +6,5 @@ public interface IFileService
 
     Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default);
 
-    Task GetAsync(GetFileRequest req, CancellationToken cancellationToken = default);
+    Task<MemoryStream> GetAsync(GetFileRequest req, CancellationToken cancellationToken = default);
 }

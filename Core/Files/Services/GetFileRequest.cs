@@ -2,5 +2,5 @@ namespace Core.Files.Services;
 
 public class GetFileRequest
 {
-    public Guid Id { get; set; }
+    public string Name { get; set; } = default!;
 }
