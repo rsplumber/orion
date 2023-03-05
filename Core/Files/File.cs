@@ -9,4 +9,6 @@ public class File
     public Dictionary<string, string> Metas { get; set; } = new();
 
     public Dictionary<string, string> Locations { get; set; } = new();
+    
+    public DateTime CreatedDateUtc { get; internal set; } = DateTime.UtcNow;
 }
