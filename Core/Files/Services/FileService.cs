@@ -34,7 +34,14 @@ public class FileService : IFileService
             Path = req.FilePath,
         });
 
-        System.IO.File.Delete(req.FilePath);
+        await provider.PutAsync(new PutObject
+        {
+            Name = req.Name,
+            ContentType = req.ContentType,
+            Path = req.FilePath,
+        });
+
+
 
         var file = new File
         {
@@ -54,6 +61,9 @@ public class FileService : IFileService
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
+        
+        // todo delete file from local bug should be fixed 
+        // System.IO.File.Delete(req.FilePath);
 
 
         await _capPublisher.PublishAsync(ReplicateFileEvent.EventName, new ReplicateFileEvent

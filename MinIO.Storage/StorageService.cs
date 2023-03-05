@@ -46,7 +46,7 @@ public class StorageService : IStorageService
     public async Task<MemoryStream> GetAsync(GetObject obj)
     {
         await using var fileStream = new MemoryStream();
-        
+
         var minio = new MinioClient()
             .WithEndpoint(Endpoint)
             .WithCredentials(AccessKey, SecretKey)

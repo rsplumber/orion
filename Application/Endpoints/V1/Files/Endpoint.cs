@@ -30,8 +30,10 @@ internal sealed class Endpoint : Endpoint<Request>
 
         if (req.File.Length > 0)
         {
-            await using Stream fileStream = new FileStream(filePath, FileMode.Create);
-            await req.File.CopyToAsync(fileStream, ct);
+            await using (Stream fileStream = new FileStream(filePath, FileMode.OpenOrCreate))
+            {
+                await req.File.CopyToAsync(fileStream, ct);
+            }
         }
 
         var request = new PutFileRequest
@@ -43,7 +45,6 @@ internal sealed class Endpoint : Endpoint<Request>
         };
 
         await _fileService.PutAsync(request, ct);
-
         await SendOkAsync(ct);
     }
 }
