@@ -1,5 +1,4 @@
-﻿using Core.FileLocations;
-using Core.Files.Events;
+﻿using Core.Files.Events;
 using Core.Files.Exceptions;
 using DotNetCore.CAP;
 using Providers.Abstractions;
@@ -9,17 +8,15 @@ namespace Core.Files.Services;
 public class FileService : IFileService
 {
     private readonly IFileRepository _fileRepository;
-    private readonly IFileLocationRepository _fileLocationRepository;
     private readonly IEnumerable<IStorageService> _storageService;
     private readonly ICapPublisher _capPublisher;
 
 
-    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IEnumerable<IStorageService> storageService, IFileLocationRepository fileLocationRepository)
+    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IEnumerable<IStorageService> storageService)
     {
         _fileRepository = fileRepository;
         _capPublisher = capPublisher;
         _storageService = storageService;
-        _fileLocationRepository = fileLocationRepository;
     }
 
     public async Task PutAsync(PutFileRequest req, CancellationToken cancellationToken)
@@ -49,14 +46,13 @@ public class FileService : IFileService
             },
         };
 
-        var fileLocation = new FileLocation
+
+        file.Add(new FileLocation
         {
             Location = req.Name,
             Provider = "local",
-            FileId = file.Id
-        };
+        });
 
-        await _fileLocationRepository.AddAsync(fileLocation, cancellationToken);
         await _fileRepository.AddAsync(file, cancellationToken);
 
 

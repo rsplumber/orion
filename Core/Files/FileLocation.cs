@@ -1,4 +1,4 @@
-namespace Core.FileLocations;
+namespace Core.Files;
 
 public class FileLocation
 {
@@ -8,5 +8,4 @@ public class FileLocation
 
     public string Provider { get; set; } = default!;
 
-    public Guid FileId { get; set; }
 }

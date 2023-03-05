@@ -1,4 +1,4 @@
-﻿using Core.FileLocations;
+﻿using Core.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using File = Core.Files.File;
@@ -13,6 +13,8 @@ public class ObjectStorageDbContext : DbContext
 
 
     public DbSet<File> Files { get; set; }
+    
+    public DbSet<FileLocation> FileLocations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -52,6 +54,10 @@ public class ObjectStorageDbContext : DbContext
             builder.Property(file => file.CreatedDateUtc)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("created_date_utc");
+
+            builder.HasMany(file => file.Locations)
+                .WithOne()
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 
@@ -70,18 +76,11 @@ public class ObjectStorageDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("location");
 
-            builder.HasIndex(location => location.Location);
 
             builder.Property(location => location.Provider)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("provider");
-
-
-            builder.Property(location => location.FileId)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("file_id");
-
-            builder.HasIndex(location => location.FileId);
+            builder.HasIndex(location => location.Provider);
         }
     }
 }

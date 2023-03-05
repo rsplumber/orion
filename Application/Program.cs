@@ -35,6 +35,8 @@ app.UseFastEndpoints(config =>
     config.Endpoints.Filter = ep => ep.EndpointTags?.Contains("hidden") is not true;
 });
 
+app.UseObjectStorage(builder.Configuration);
+
 
 // if (app.Environment.IsDevelopment())
 // {

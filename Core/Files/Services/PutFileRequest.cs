@@ -2,11 +2,11 @@ namespace Core.Files.Services;
 
 public class PutFileRequest
 {
-    public string Name { get; set; } = default!;
+    public string Name { get; init; } = default!;
     
-    public string FilePath { get; set; } = default!;
+    public string FilePath { get; init; } = default!;
 
-    public string Extension { get; set; } = default!;
+    public string Extension { get; init; } = default!;
 
-    public string ContentType { get; set; } = default!;
+    public string ContentType { get; init; } = default!;
 }
