@@ -7,13 +7,13 @@ public class StorageService : IStorageService
 {
     public string ProviderName => "minio";
 
-    private static string BucketName => "default";
+    private const string BucketName = "default";
 
-    private static string AccessKey => "EvZWw7VSbGCm4M9D";
+    private const string AccessKey = "EvZWw7VSbGCm4M9D";
 
-    private static string SecretKey => "5RQNFh5SI2NVxWiAxVp9VK5tvmWQ7BMN";
+    private const string SecretKey = "5RQNFh5SI2NVxWiAxVp9VK5tvmWQ7BMN";
 
-    private static string Endpoint => "localhost:9000";
+    private const string Endpoint = "localhost:9000";
 
     public async Task<string> PutAsync(PutObject obj)
     {
@@ -39,6 +39,7 @@ public class StorageService : IStorageService
             .WithFileName(obj.Path)
             .WithContentType(obj.ContentType);
         await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+
         return obj.Name;
     }
 

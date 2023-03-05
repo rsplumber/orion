@@ -2,7 +2,7 @@ using Core.Files.Services;
 using FastEndpoints;
 using FluentValidation;
 
-namespace Application.Endpoints.V1.Files;
+namespace Application.Endpoints.V1.Files.Put;
 
 internal sealed class Endpoint : Endpoint<Request>
 {
