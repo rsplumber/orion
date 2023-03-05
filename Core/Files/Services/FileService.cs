@@ -27,7 +27,7 @@ public class FileService : IFileService
             throw new ProviderNotFoundException();
         }
 
-        var fileAddress = await provider.PutAsync(new PutObject
+        await provider.PutAsync(new PutObject
         {
             Name = req.Name,
             ContentType = req.ContentType,
@@ -36,7 +36,7 @@ public class FileService : IFileService
 
         System.IO.File.Delete(req.FilePath);
 
-        await _fileRepository.AddAsync(new File
+        var file = new File
         {
             Name = req.Name,
             Metas = new Dictionary<string, string>
@@ -46,17 +46,16 @@ public class FileService : IFileService
             },
             Locations = new Dictionary<string, string>()
             {
-                {"local", fileAddress}
+                {"local", req.Name}
             }
-        }, cancellationToken);
+        };
 
+        await _fileRepository.AddAsync(file, cancellationToken);
 
-        //todo put to MinIo
-        //todo put MinIo fileAddress to file.location
 
         await _capPublisher.PublishAsync(ReplicateFileEvent.EventName, new ReplicateFileEvent
         {
-            // Id = file.Id,
+            Id = file.Id,
         }, cancellationToken: cancellationToken);
     }
 
