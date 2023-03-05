@@ -1,27 +1,39 @@
 using Core.Files;
+using Microsoft.EntityFrameworkCore;
 using File = Core.Files.File;
 
 namespace Data.Sql.Files;
 
 public class FileRepository : IFileRepository
 {
-    public Task AddAsync(File entity, CancellationToken cancellationToken = default)
+    private readonly ObjectStorageDbContext _dbContext;
+
+    public FileRepository(ObjectStorageDbContext dbContext)
     {
-        throw new NotImplementedException();
+        _dbContext = dbContext;
     }
 
-    public Task UpdateAsync(File entity, CancellationToken cancellationToken = default)
+    public async Task AddAsync(File entity, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        await _dbContext.Files.AddAsync(entity, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task DeleteAsync(File entity, CancellationToken cancellationToken = default)
+    public async Task UpdateAsync(File entity, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        _dbContext.Files.Update(entity);
+        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task DeleteAsync(File entity, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        _dbContext.Files.Remove(entity);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _dbContext.Files
+            .FirstOrDefaultAsync(file => file.Id == id, cancellationToken: cancellationToken);
     }
 }
