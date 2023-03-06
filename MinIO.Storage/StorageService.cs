@@ -16,6 +16,8 @@ public class StorageService : IStorageService
 
     private const string BucketName = "default";
 
+    private const int LinkExpireTimeInSeconds = 60 * 60 * 24 * 5 * 365; // 5 years 
+
 
     public async Task<string> PutAsync(PutObject obj)
     {
@@ -36,7 +38,13 @@ public class StorageService : IStorageService
             .WithContentType(obj.ContentType);
         await _client.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
-        return obj.Name;
+        var args = new PresignedGetObjectArgs()
+            .WithBucket(BucketName)
+            .WithObject(obj.Name)
+            .WithExpiry(LinkExpireTimeInSeconds);
+        var url = await _client.PresignedGetObjectAsync(args);
+
+        return url;
     }
 
 
@@ -53,7 +61,11 @@ public class StorageService : IStorageService
             .WithBucket(BucketName)
             .WithObject(obj.Name)
             .WithCallbackStream(stream => { stream.CopyTo(fileStream); });
-        await _client.GetObjectAsync(getObjectArgs);
+        var stream = await _client.GetObjectAsync(getObjectArgs);
+        var tags = await _client.GetObjectTagsAsync(new GetObjectTagsArgs()
+            .WithBucket(BucketName)
+            .WithObject(obj.Name));
+
         return fileStream;
     }
 

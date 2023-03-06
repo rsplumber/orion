@@ -28,7 +28,7 @@ public class FileService : IFileService
             throw new ProviderNotFoundException();
         }
 
-        await provider.PutAsync(new PutObject
+        var link = await provider.PutAsync(new PutObject
         {
             Name = req.Name,
             ContentType = req.ContentType,
@@ -48,7 +48,7 @@ public class FileService : IFileService
 
         file.Add(new FileLocation
         {
-            Location = req.Name,
+            Location = link,
             Provider = "local",
         });
 
