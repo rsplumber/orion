@@ -19,7 +19,7 @@ namespace Data.Sql.Migrations
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
                     metas = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
-                    createddateutc = table.Column<DateTime>(name: "created_date_utc", type: "timestamp with time zone", nullable: false)
+                    created_date_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,6 +32,7 @@ namespace Data.Sql.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     location = table.Column<string>(type: "text", nullable: false),
+                    filename = table.Column<string>(type: "text", nullable: false),
                     provider = table.Column<string>(type: "text", nullable: false),
                     FileId = table.Column<Guid>(type: "uuid", nullable: true)
                 },

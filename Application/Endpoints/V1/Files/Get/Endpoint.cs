@@ -1,36 +1,29 @@
 using FastEndpoints;
-using Providers.Abstractions;
 using Queries.Files;
 
 namespace Application.Endpoints.V1.Files.Get;
 
-internal sealed class Endpoint : Endpoint<Request, FileResponse>
+internal sealed class Endpoint : Endpoint<XRequest>
 {
-    private readonly IFileQuery _fileDetailsQuery;
-    private readonly IStorageService _storageService;
+    private readonly IFileQuery _fileQuery;
 
 
-    public Endpoint(IFileQuery fileDetailsQuery, IStorageService storageService)
+    public Endpoint(IFileQuery fileQuery)
     {
-        _fileDetailsQuery = fileDetailsQuery;
-        _storageService = storageService;
+        _fileQuery = fileQuery;
     }
 
     public override void Configure()
     {
-        Get("file/{id}");
+        Get("file");
         AllowAnonymous();
         Version(1);
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(XRequest req, CancellationToken ct)
     {
-        var response = await _storageService.GetAsync(new GetObject()
-        {
-            Name = "d617fde4-7127-4ecb-a902-8f505b4cea1a_20230130_125210.jpg"
-        });
-        // var response = await _fileDetailsQuery.GetLinkAsync(req.Id, ct);
-        await SendOkAsync(ct);
+        var fileResponse = await _fileQuery.GetLinkAsync(new Guid(req.Id), ct);
+        await SendRedirectAsync(fileResponse.Link, false, ct);
     }
 }
 
@@ -44,7 +37,7 @@ internal sealed class EndpointSummary : Summary<Endpoint>
     }
 }
 
-internal sealed record Request
+internal sealed record XRequest
 {
-    public Guid Id { get; set; }
+    public string Id { get; set; }
 }

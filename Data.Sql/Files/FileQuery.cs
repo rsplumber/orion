@@ -16,7 +16,11 @@ internal sealed class FileQuery : IFileQuery
     public async Task<FileResponse> GetLinkAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var file = await _dbContext.Files
-            .FirstOrDefaultAsync(model => model.Id == id, cancellationToken);
+            .Include
+                (file1 => file1.Locations)
+            .AsNoTracking()
+            .Where(file1 => file1.Id == id)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
 
         if (file is null)
         {
@@ -25,7 +29,7 @@ internal sealed class FileQuery : IFileQuery
 
         return new FileResponse
         {
-            Link = file.Locations.FirstOrDefault(response => response.Provider == DefaultProvider)!.ToString()!
+            Link = file.Locations.FirstOrDefault(response => response.Provider == DefaultProvider)!.Location
         };
     }
 }

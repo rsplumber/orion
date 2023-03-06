@@ -45,10 +45,10 @@ public class FileService : IFileService
             },
         };
 
-
         file.Add(new FileLocation
         {
             Location = link,
+            Filename = req.Name,
             Provider = "local",
         });
 

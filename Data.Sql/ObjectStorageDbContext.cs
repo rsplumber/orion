@@ -13,7 +13,7 @@ public class ObjectStorageDbContext : DbContext
 
 
     public DbSet<File> Files { get; set; }
-    
+
     public DbSet<FileLocation> FileLocations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -75,6 +75,10 @@ public class ObjectStorageDbContext : DbContext
             builder.Property(location => location.Location)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("location");
+
+            builder.Property(location => location.Filename)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("filename");
 
 
             builder.Property(location => location.Provider)
