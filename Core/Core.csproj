@@ -14,8 +14,4 @@
       <ProjectReference Include="..\Providers.Abstractions\Providers.Abstractions.csproj" />
     </ItemGroup>
     
-    <ItemGroup>
-      <Folder Include="FileLocations" />
-    </ItemGroup>
-    
 </Project>

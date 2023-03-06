@@ -5,6 +5,17 @@ namespace MinIO;
 
 public class StorageService : IStorageService
 {
+    public StorageService(MinioClient client)
+    {
+        _client = client
+            .WithEndpoint(Endpoint)
+            .WithCredentials(AccessKey, SecretKey)
+            .Build();
+        ;
+    }
+
+    private readonly MinioClient _client;
+    
     public string ProviderName => "minio";
 
     private const string BucketName = "default";
@@ -15,22 +26,19 @@ public class StorageService : IStorageService
 
     private const string Endpoint = "localhost:9000";
 
+
     public async Task<string> PutAsync(PutObject obj)
     {
-        var minio = new MinioClient()
-            .WithEndpoint(Endpoint)
-            .WithCredentials(AccessKey, SecretKey)
-            .Build();
 
 
         var beArgs = new BucketExistsArgs()
             .WithBucket(BucketName);
-        var found = await minio.BucketExistsAsync(beArgs).ConfigureAwait(false);
+        var found = await _client.BucketExistsAsync(beArgs).ConfigureAwait(false);
         if (!found)
         {
             var mbArgs = new MakeBucketArgs()
                 .WithBucket(BucketName);
-            await minio.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+            await _client.MakeBucketAsync(mbArgs).ConfigureAwait(false);
         }
 
         var putObjectArgs = new PutObjectArgs()
@@ -38,7 +46,7 @@ public class StorageService : IStorageService
             .WithObject(obj.Name)
             .WithFileName(obj.Path)
             .WithContentType(obj.ContentType);
-        await minio.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+        await _client.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
 
         return obj.Name;
     }
@@ -48,25 +56,20 @@ public class StorageService : IStorageService
     {
         await using var fileStream = new MemoryStream();
 
-        var minio = new MinioClient()
-            .WithEndpoint(Endpoint)
-            .WithCredentials(AccessKey, SecretKey)
-            .Build();
-
         var statObjectArgs = new StatObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name);
-        await minio.StatObjectAsync(statObjectArgs);
+        await _client.StatObjectAsync(statObjectArgs);
 
         var getObjectArgs = new GetObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name)
             .WithCallbackStream(stream => { stream.CopyTo(fileStream); });
-        await minio.GetObjectAsync(getObjectArgs);
+        await _client.GetObjectAsync(getObjectArgs);
         return fileStream;
     }
 
-    public Task<string> DeleteAsync(DeleteObject obj)
+    public Task DeleteAsync(DeleteObject obj)
     {
         throw new NotImplementedException();
     }

@@ -1,6 +1,6 @@
 ﻿namespace Queries.Files;
 
-public class FileResponse
+public sealed record FileResponse
 {
     public string Link { get; set; }
 }

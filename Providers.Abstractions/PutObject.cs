@@ -1,8 +1,8 @@
 namespace Providers.Abstractions;
 
-public class PutObject
+public sealed record PutObject
 {
-    public string Name { get; set; } = null!;
-    public string Path { get; set; } = null!;
-    public string ContentType { get; set; } = null!;
+    public string Name { get; init; } = null!;
+    public string Path { get; init; } = null!;
+    public string ContentType { get; init; } = null!;
 }

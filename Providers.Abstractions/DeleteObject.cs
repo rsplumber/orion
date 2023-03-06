@@ -1,7 +1,6 @@
 namespace Providers.Abstractions;
 
-public class DeleteObject
+public sealed record DeleteObject
 {
-    public string Name { get; set; } = null!;
-    public string BucketName { get; set; } = null!;
+    public string Name { get; init; } = null!;
 }

@@ -7,6 +7,7 @@ namespace Core.Files.Services;
 
 public class FileService : IFileService
 {
+    private const string DefaultProvider = "minio";
     private readonly IFileRepository _fileRepository;
     private readonly IEnumerable<IStorageService> _storageService;
     private readonly ICapPublisher _capPublisher;
@@ -21,7 +22,7 @@ public class FileService : IFileService
 
     public async Task PutAsync(PutFileRequest req, CancellationToken cancellationToken)
     {
-        var provider = _storageService.FirstOrDefault(service => service.ProviderName == "minio");
+        var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
         if (provider is null)
         {
             throw new ProviderNotFoundException();
@@ -33,15 +34,6 @@ public class FileService : IFileService
             ContentType = req.ContentType,
             Path = req.FilePath,
         });
-
-        await provider.PutAsync(new PutObject
-        {
-            Name = req.Name,
-            ContentType = req.ContentType,
-            Path = req.FilePath,
-        });
-
-
 
         var file = new File
         {
@@ -61,7 +53,7 @@ public class FileService : IFileService
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
-        
+
         // todo delete file from local bug should be fixed 
         // System.IO.File.Delete(req.FilePath);
 
@@ -74,12 +66,23 @@ public class FileService : IFileService
 
     public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
+
+        if (provider is null)
+        {
+            throw new ProviderNotFoundException();
+        }
+
+        var fileName = (await _fileRepository.FindAsync(req.Id, cancellationToken))!.Name;
+        await provider.DeleteAsync(new DeleteObject
+        {
+            Name = fileName
+        });
     }
 
     public async Task<MemoryStream> GetAsync(GetFileRequest req, CancellationToken cancellationToken = default)
     {
-        var provider = _storageService.FirstOrDefault(service => service.ProviderName == "minio");
+        var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
 
         if (provider is null)
         {

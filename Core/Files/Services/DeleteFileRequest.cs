@@ -1,6 +1,6 @@
 namespace Core.Files.Services;
 
-public class DeleteFileRequest
+public sealed record DeleteFileRequest
 {
     public Guid Id { get; set; }
 }

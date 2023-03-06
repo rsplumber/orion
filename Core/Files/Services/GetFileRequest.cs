@@ -1,6 +1,6 @@
 namespace Core.Files.Services;
 
-public class GetFileRequest
+public sealed record GetFileRequest
 {
     public string Name { get; set; } = default!;
 }
