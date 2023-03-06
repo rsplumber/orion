@@ -3,6 +3,7 @@ using Data.Sql.Files;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Queries.Files;
 
 namespace Data.Sql;
 
@@ -13,5 +14,6 @@ public static class ServiceCollectionExtension
         services.AddDbContext<ObjectStorageDbContext>(
             builder => builder.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddScoped<IFileRepository, FileRepository>();
+        services.AddScoped<IFileQuery, FileQuery>();
     }
 }

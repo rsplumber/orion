@@ -22,7 +22,7 @@ internal sealed class Endpoint : Endpoint<Request, FileResponse>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var response = await _fileDetailsQuery.GetAsync(req.Id, ct);
+        var response = await _fileDetailsQuery.GetLinkAsync(req.Id, ct);
         await SendOkAsync(response, ct);
     }
 }

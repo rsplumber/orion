@@ -3,17 +3,17 @@ using Queries.Files;
 
 namespace Data.Sql.Files;
 
-internal sealed class FileLinksQuery : IFileQuery
+internal sealed class FileQuery : IFileQuery
 {
     private const string DefaultProvider = "local";
     private readonly ObjectStorageDbContext _dbContext;
 
-    public FileLinksQuery(ObjectStorageDbContext dbContext)
+    public FileQuery(ObjectStorageDbContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<FileResponse> GetAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<FileResponse> GetLinkAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var file = await _dbContext.Files
             .FirstOrDefaultAsync(model => model.Id == id, cancellationToken);
