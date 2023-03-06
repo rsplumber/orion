@@ -5,32 +5,20 @@ namespace MinIO;
 
 public class StorageService : IStorageService
 {
+    private readonly MinioClient _client;
+
     public StorageService(MinioClient client)
     {
-        _client = client
-            .WithEndpoint(Endpoint)
-            .WithCredentials(AccessKey, SecretKey)
-            .Build();
-        ;
+        _client = client;
     }
 
-    private readonly MinioClient _client;
-    
     public string ProviderName => "minio";
 
     private const string BucketName = "default";
 
-    private const string AccessKey = "EvZWw7VSbGCm4M9D";
-
-    private const string SecretKey = "5RQNFh5SI2NVxWiAxVp9VK5tvmWQ7BMN";
-
-    private const string Endpoint = "localhost:9000";
-
 
     public async Task<string> PutAsync(PutObject obj)
     {
-
-
         var beArgs = new BucketExistsArgs()
             .WithBucket(BucketName);
         var found = await _client.BucketExistsAsync(beArgs).ConfigureAwait(false);

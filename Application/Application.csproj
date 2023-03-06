@@ -7,6 +7,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.0" />
+        <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.3" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
         <PackageReference Include="FastEndpoints" Version="5.8.0" />
