@@ -15,7 +15,7 @@ internal sealed class Endpoint : Endpoint<XRequest>
 
     public override void Configure()
     {
-        Get("file");
+        Get("file/{id}");
         AllowAnonymous();
         Version(1);
     }

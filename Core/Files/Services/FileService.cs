@@ -54,9 +54,7 @@ public class FileService : IFileService
 
         await _fileRepository.AddAsync(file, cancellationToken);
 
-        // todo delete file from local bug should be fixed 
-        // System.IO.File.Delete(req.FilePath);
-
+        // todo delete file from local bug should be fixed
 
         await _capPublisher.PublishAsync(ReplicateFileEvent.EventName, new ReplicateFileEvent
         {
@@ -93,5 +91,15 @@ public class FileService : IFileService
         {
             Name = req.Name,
         });
+    }
+
+    public Task<string> EncryptLinkAsync(Guid fileId, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Guid> DecryptLinkAsync(string link, CancellationToken cancellationToken = default)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -7,4 +7,8 @@ public interface IFileService
     Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default);
 
     Task<MemoryStream> GetAsync(GetFileRequest req, CancellationToken cancellationToken = default);
+    
+    Task<string> EncryptLinkAsync(Guid fileId, CancellationToken cancellationToken = default);
+    
+    Task<Guid> DecryptLinkAsync(string link, CancellationToken cancellationToken = default);
 }

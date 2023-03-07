@@ -21,30 +21,29 @@ public class StorageService : IStorageService
 
     public async Task<string> PutAsync(PutObject obj)
     {
-        var beArgs = new BucketExistsArgs()
-            .WithBucket(BucketName);
-        var found = await _client.BucketExistsAsync(beArgs).ConfigureAwait(false);
-        if (!found)
+        if (!await FileExitsAsync())
         {
-            var mbArgs = new MakeBucketArgs()
-                .WithBucket(BucketName);
-            await _client.MakeBucketAsync(mbArgs).ConfigureAwait(false);
+            await _client.MakeBucketAsync(new MakeBucketArgs()
+                .WithBucket(BucketName));
         }
 
-        var putObjectArgs = new PutObjectArgs()
+        await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name)
             .WithFileName(obj.Path)
-            .WithContentType(obj.ContentType);
-        await _client.PutObjectAsync(putObjectArgs).ConfigureAwait(false);
+            .WithContentType(obj.ContentType));
 
-        var args = new PresignedGetObjectArgs()
+        var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name)
-            .WithExpiry(LinkExpireTimeInSeconds);
-        var url = await _client.PresignedGetObjectAsync(args);
+            .WithExpiry(LinkExpireTimeInSeconds));
 
         return url;
+
+        async Task<bool> FileExitsAsync()
+        {
+            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(BucketName));
+        }
     }
 
 
