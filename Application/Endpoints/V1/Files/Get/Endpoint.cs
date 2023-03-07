@@ -1,29 +1,31 @@
+using Core.Files.Services;
 using FastEndpoints;
-using Queries.Files;
 
 namespace Application.Endpoints.V1.Files.Get;
 
-internal sealed class Endpoint : Endpoint<XRequest>
+internal sealed class Endpoint : Endpoint<Request>
 {
-    private readonly IFileQuery _fileQuery;
+    private readonly IFileService _fileService;
 
-
-    public Endpoint(IFileQuery fileQuery)
+    public Endpoint(IFileService fileService)
     {
-        _fileQuery = fileQuery;
+        _fileService = fileService;
     }
 
     public override void Configure()
     {
-        Get("file/{id}");
+        Get("file/{Link}");
         AllowAnonymous();
         Version(1);
     }
 
-    public override async Task HandleAsync(XRequest req, CancellationToken ct)
+    public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var fileResponse = await _fileQuery.GetLinkAsync(new Guid(req.Id), ct);
-        await SendRedirectAsync(fileResponse.Link, false, ct);
+        var location = await _fileService.GetLocationAsync(new GetFileRequest
+        {
+            Link = req.Link
+        }, ct);
+        await SendRedirectAsync(location, false, ct);
     }
 }
 
@@ -37,7 +39,7 @@ internal sealed class EndpointSummary : Summary<Endpoint>
     }
 }
 
-internal sealed record XRequest
+internal sealed record Request
 {
-    public string Id { get; set; }
+    public string Link { get; set; }
 }

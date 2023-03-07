@@ -35,7 +35,7 @@ internal sealed class Endpoint : Endpoint<Request>
                 await req.File.CopyToAsync(fileStream, ct);
             }
         }
-        
+
         var request = new PutFileRequest
         {
             Name = fileName,
@@ -44,8 +44,8 @@ internal sealed class Endpoint : Endpoint<Request>
             ContentType = req.File.ContentType
         };
 
-        await _fileService.PutAsync(request, ct);
-        await SendOkAsync(ct);
+        var location = await _fileService.PutAsync(request, ct);
+        await SendOkAsync(location, ct);
     }
 }
 

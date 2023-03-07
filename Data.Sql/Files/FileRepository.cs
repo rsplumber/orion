@@ -34,6 +34,10 @@ public class FileRepository : IFileRepository
     public async Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Files
-            .FirstOrDefaultAsync(file => file.Id == id, cancellationToken: cancellationToken);
+            .Include
+                (f => f.Locations)
+            .AsNoTracking()
+            .Where(f => f.Id == id)
+            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
     }
 }

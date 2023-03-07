@@ -1,5 +1,6 @@
 ﻿using Core.Files.Events;
 using Core.Files.Exceptions;
+using Core.Tools.Cryptography;
 using DotNetCore.CAP;
 using Providers.Abstractions;
 
@@ -20,7 +21,7 @@ public class FileService : IFileService
         _storageService = storageService;
     }
 
-    public async Task PutAsync(PutFileRequest req, CancellationToken cancellationToken)
+    public async Task<string> PutAsync(PutFileRequest req, CancellationToken cancellationToken)
     {
         var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
         if (provider is null)
@@ -54,12 +55,14 @@ public class FileService : IFileService
 
         await _fileRepository.AddAsync(file, cancellationToken);
 
+
         // todo delete file from local bug should be fixed
 
         await _capPublisher.PublishAsync(ReplicateFileEvent.EventName, new ReplicateFileEvent
         {
             Id = file.Id,
         }, cancellationToken: cancellationToken);
+        return GenerateLink(file.Id);
     }
 
     public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
@@ -78,28 +81,35 @@ public class FileService : IFileService
         });
     }
 
-    public async Task<MemoryStream> GetAsync(GetFileRequest req, CancellationToken cancellationToken = default)
+    public async Task<string> GetLocationAsync(GetFileRequest req, CancellationToken cancellationToken = default)
     {
-        var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
+        var fileId = ExtractId(req.Link);
+        var file = await _fileRepository.FindAsync(fileId, cancellationToken);
 
-        if (provider is null)
+        if (file is null)
         {
-            throw new ProviderNotFoundException();
+            throw new FileNotFoundException();
         }
 
-        return await provider.GetAsync(new GetObject()
+        if (file.Locations is null)
         {
-            Name = req.Name,
-        });
+            throw new LocationNotFoundException();
+        }
+
+        return file.Locations.First(location => location.Provider == "local").Location;
     }
 
-    public Task<string> EncryptLinkAsync(Guid fileId, CancellationToken cancellationToken = default)
+    private static string GenerateLink(Guid fileId)
     {
-        throw new NotImplementedException();
+        return Cryptography.AES.Encrypt(
+            fileId.ToString(), "default"
+        );
     }
 
-    public Task<Guid> DecryptLinkAsync(string link, CancellationToken cancellationToken = default)
+    private static Guid ExtractId(string link)
     {
-        throw new NotImplementedException();
+        var extracted = Cryptography.AES.Decrypt(
+            link, "default");
+        return Guid.Parse(extracted);
     }
 }
