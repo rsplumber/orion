@@ -14,7 +14,7 @@ internal sealed class Endpoint : Endpoint<Request>
 
     public override void Configure()
     {
-        Get("file/{Link}");
+        Get("files/{Link}");
         AllowAnonymous();
         Version(1);
     }
@@ -33,9 +33,9 @@ internal sealed class EndpointSummary : Summary<Endpoint>
 {
     public EndpointSummary()
     {
-        Summary = "Get file detail in the system";
-        Description = "Get file detail in the system";
-        Response(200, "File detail was successfully returned");
+        Summary = "Get file location in the system";
+        Description = "Get file location in the system";
+        Response(200, "File location was successfully returned");
     }
 }
 

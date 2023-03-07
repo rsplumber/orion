@@ -15,7 +15,7 @@ internal sealed class Endpoint : Endpoint<Request>
 
     public override void Configure()
     {
-        Post("file/put");
+        Put("files");
         AllowAnonymous();
         AllowFileUploads();
         Version(1);
