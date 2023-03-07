@@ -21,7 +21,7 @@ public class FileService : IFileService
         _storageService = storageService;
     }
 
-    public async Task<string> PutAsync(PutFileRequest req, CancellationToken cancellationToken)
+    public async Task<string> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken)
     {
         var provider = _storageService.FirstOrDefault(service => service.ProviderName == DefaultProvider);
         if (provider is null)
@@ -29,11 +29,9 @@ public class FileService : IFileService
             throw new ProviderNotFoundException();
         }
 
-        var link = await provider.PutAsync(new PutObject
+        var link = await provider.PutAsync(stream, new PutObject
         {
-            Name = req.Name,
-            ContentType = req.ContentType,
-            Path = req.FilePath,
+            Name = req.Name
         });
 
         var file = new File
@@ -41,29 +39,28 @@ public class FileService : IFileService
             Name = req.Name,
             Metas = new Dictionary<string, string>
             {
-                {"Extension", req.Extension},
-                {"ContentType", req.ContentType}
-            },
+                {"Extension", req.Extension}
+            }
         };
 
         file.Add(new FileLocation
         {
             Location = link,
             Filename = req.Name,
-            Provider = "local",
+            Provider = provider.ProviderName,
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
 
 
-        // todo delete file from local bug should be fixed
-
         await _capPublisher.PublishAsync(ReplicateFileEvent.EventName, new ReplicateFileEvent
         {
             Id = file.Id,
         }, cancellationToken: cancellationToken);
+        
         return GenerateLink(file.Id);
     }
+
 
     public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
     {

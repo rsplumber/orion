@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Application.Endpoints.V1.Files.Put;
 
-internal sealed class Endpoint : Endpoint<Request>
+internal sealed class Endpoint : EndpointWithoutRequest
 {
     private readonly IFileService _fileService;
 
@@ -17,34 +17,24 @@ internal sealed class Endpoint : Endpoint<Request>
     {
         Put("files");
         AllowAnonymous();
-        AllowFileUploads();
+        AllowFileUploads(dontAutoBindFormData: true);
         Version(1);
     }
 
-    public override async Task HandleAsync(Request req, CancellationToken ct)
+    public override async Task HandleAsync(CancellationToken ct)
     {
-        var fileExtension = Path.GetExtension(req.File.FileName);
-        var fileName = Guid.NewGuid() + "_" + req.File.FileName;
-        var filePath = Path.Combine(".\\Files", fileName);
 
-
-        if (req.File.Length > 0)
+        var location = string.Empty;
+        await foreach (var section in FormFileSectionsAsync(ct))
         {
-            await using (Stream fileStream = new FileStream(filePath, FileMode.OpenOrCreate))
+            if (section is null) continue;
+            location = await _fileService.PutAsync(section.Section.Body, new PutFileRequest
             {
-                await req.File.CopyToAsync(fileStream, ct);
-            }
+                Name = section.FileName,
+                Extension = Path.GetExtension(section.FileName),
+            }, ct);
         }
 
-        var request = new PutFileRequest
-        {
-            Name = fileName,
-            FilePath = filePath,
-            Extension = fileExtension,
-            ContentType = req.File.ContentType
-        };
-
-        var location = await _fileService.PutAsync(request, ct);
         await SendOkAsync(location, ct);
     }
 }

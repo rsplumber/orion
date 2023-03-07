@@ -19,7 +19,7 @@ public class StorageService : IStorageService
     private const int LinkExpireTimeInSeconds = 604800;
 
 
-    public async Task<string> PutAsync(PutObject obj)
+    public async Task<string> PutAsync(Stream stream, PutObject obj)
     {
         if (!await FileExitsAsync())
         {
@@ -30,8 +30,9 @@ public class StorageService : IStorageService
         await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name)
-            .WithFileName(obj.Path)
-            .WithContentType(obj.ContentType));
+            .WithStreamData(stream)
+            .WithObjectSize(1024 * 64)
+            .WithContentType("application/octet-stream"));
 
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
             .WithBucket(BucketName)

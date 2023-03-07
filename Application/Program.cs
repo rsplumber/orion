@@ -4,7 +4,11 @@ using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseKestrel();
+builder.WebHost.UseKestrel(options =>
+{
+    options.Limits.MaxRequestBodySize = 30720000000; //set to max allowed file size of your system
+});
+
 builder.WebHost.ConfigureKestrel((_, options) =>
 {
     options.ListenAnyIP(5161, _ => { });
