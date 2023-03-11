@@ -1,6 +1,6 @@
 ﻿using Core.Files.Events;
 using Core.Files.Exceptions;
-using Core.Tools.Cryptography;
+using CSharpVitamins;
 using DotNetCore.CAP;
 using Providers.Abstractions;
 
@@ -29,13 +29,16 @@ public class FileService : IFileService
             throw new ProviderNotFoundException();
         }
 
+        var id = Guid.NewGuid();
         var link = await provider.PutAsync(stream, new PutObject
         {
-            Name = req.Name
+            Length = req.Lenght,
+            Name = id + req.Extension
         });
 
         var file = new File
         {
+            Id = id,
             Name = req.Name,
             Metas = new Dictionary<string, string>
             {
@@ -57,7 +60,7 @@ public class FileService : IFileService
         {
             Id = file.Id,
         }, cancellationToken: cancellationToken);
-        
+
         return GenerateLink(file.Id);
     }
 
@@ -93,20 +96,19 @@ public class FileService : IFileService
             throw new LocationNotFoundException();
         }
 
-        return file.Locations.First(location => location.Provider == "local").Location;
+        var fileLocation = file.Locations.First(location => location.Provider == "minio").Location;
+        return fileLocation;
     }
 
     private static string GenerateLink(Guid fileId)
     {
-        return Cryptography.AES.Encrypt(
-            fileId.ToString(), "default"
-        );
+        ShortGuid generatedLink = fileId;
+        return generatedLink.Value;
     }
 
     private static Guid ExtractId(string link)
     {
-        var extracted = Cryptography.AES.Decrypt(
-            link, "default");
-        return Guid.Parse(extracted);
+        ShortGuid extractedLink = link;
+        return extractedLink.Guid;
     }
 }

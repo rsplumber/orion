@@ -28,12 +28,11 @@ public class StorageService : IStorageService
         }
 
         await _client.PutObjectAsync(new PutObjectArgs()
-            .WithBucket(BucketName)
-            .WithObject(obj.Name)
-            .WithStreamData(stream)
-            .WithObjectSize(1024 * 64)
-            .WithContentType("application/octet-stream"));
-
+                .WithBucket(BucketName)
+                .WithObject(obj.Name)
+                .WithStreamData(stream)
+                .WithObjectSize(stream.Length))
+            ;
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
             .WithBucket(BucketName)
             .WithObject(obj.Name)

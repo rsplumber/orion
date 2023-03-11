@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Application.Endpoints.V1.Files.Put;
 
-internal sealed class Endpoint : EndpointWithoutRequest
+internal sealed class Endpoint : Endpoint<Request>
 {
     private readonly IFileService _fileService;
 
@@ -17,21 +17,21 @@ internal sealed class Endpoint : EndpointWithoutRequest
     {
         Put("files");
         AllowAnonymous();
-        AllowFileUploads(dontAutoBindFormData: true);
+        AllowFileUploads();
         Version(1);
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(Request request, CancellationToken ct)
     {
-
         var location = string.Empty;
-        await foreach (var section in FormFileSectionsAsync(ct))
+        if (Files.Count > 0)
         {
-            if (section is null) continue;
-            location = await _fileService.PutAsync(section.Section.Body, new PutFileRequest
+            var file = Files[0];
+
+            location = await _fileService.PutAsync(file.OpenReadStream(), new PutFileRequest
             {
-                Name = section.FileName,
-                Extension = Path.GetExtension(section.FileName),
+                Name = file.FileName,
+                Extension = Path.GetExtension(file.FileName),
             }, ct);
         }
 
