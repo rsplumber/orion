@@ -1,5 +1,7 @@
 ﻿using Core.Files;
+using Core.Replications;
 using Data.Sql.Files;
+using Data.Sql.Replications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +16,7 @@ public static class ServiceCollectionExtension
         services.AddDbContext<OrionDbContext>(
             builder => builder.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddScoped<IFileRepository, FileRepository>();
+        services.AddScoped<IReplicationRepository, ReplicationRepository>();
         services.AddScoped<IFileQuery, FileQuery>();
     }
 }

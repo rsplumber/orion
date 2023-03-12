@@ -32,7 +32,7 @@ builder.Services.AddSwaggerDoc(settings =>
 
 builder.Services.AddInMemoryData();
 
-builder.Services.AddObjectStorageService(builder.Configuration);
+builder.Services.AddOrionService(builder.Configuration);
 
 var app = builder.Build();
 
