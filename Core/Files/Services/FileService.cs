@@ -44,7 +44,7 @@ public class FileService : IFileService
         var file = new File
         {
             Id = id,
-            Name = req.Name,
+            Name = id + req.Extension,
             Path = filePath,
             Metas = new Dictionary<string, string>
             {

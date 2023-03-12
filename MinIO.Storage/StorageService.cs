@@ -46,15 +46,18 @@ public class StorageService : IStorageService
     }
 
 
-    public async Task<MemoryStream> GetAsync(string path, string name)
+    public MemoryStream GetAsync(string path, string name)
     {
-        await using var fileStream = new MemoryStream();
+        var fileStream = new MemoryStream();
 
         var getObjectArgs = new GetObjectArgs()
             .WithBucket(path)
             .WithObject(name)
-            .WithCallbackStream(stream => { stream.CopyTo(fileStream); });
-        await _client.GetObjectAsync(getObjectArgs);
+            .WithCallbackStream(stream =>
+            {
+                stream.CopyTo(fileStream);
+            });
+        _client.GetObjectAsync(getObjectArgs).Wait();
         return fileStream;
     }
 
