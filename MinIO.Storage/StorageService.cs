@@ -12,9 +12,8 @@ public class StorageService : IStorageService
         _client = client;
     }
 
-    public string ProviderName => "minio";
+    public string Provider => "minio";
 
-    private const string BucketName = "default";
 
     private const int LinkExpireTimeInSeconds = 604800;
 
@@ -24,17 +23,17 @@ public class StorageService : IStorageService
         if (!await FileExitsAsync())
         {
             await _client.MakeBucketAsync(new MakeBucketArgs()
-                .WithBucket(BucketName));
+                .WithBucket(obj.Path));
         }
 
         await _client.PutObjectAsync(new PutObjectArgs()
-                .WithBucket(BucketName)
+                .WithBucket(obj.Path)
                 .WithObject(obj.Name)
                 .WithStreamData(stream)
                 .WithObjectSize(stream.Length))
             ;
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(BucketName)
+            .WithBucket(obj.Path)
             .WithObject(obj.Name)
             .WithExpiry(LinkExpireTimeInSeconds));
 
@@ -42,29 +41,24 @@ public class StorageService : IStorageService
 
         async Task<bool> FileExitsAsync()
         {
-            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(BucketName));
+            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(obj.Path));
         }
     }
 
 
-    public async Task<MemoryStream> GetAsync(GetObject obj)
+    public async Task<MemoryStream> GetAsync(string path, string name)
     {
         await using var fileStream = new MemoryStream();
 
-        var statObjectArgs = new StatObjectArgs()
-            .WithBucket(BucketName)
-            .WithObject(obj.Name);
-        await _client.StatObjectAsync(statObjectArgs);
-
         var getObjectArgs = new GetObjectArgs()
-            .WithBucket(BucketName)
-            .WithObject(obj.Name)
+            .WithBucket(path)
+            .WithObject(name)
             .WithCallbackStream(stream => { stream.CopyTo(fileStream); });
         await _client.GetObjectAsync(getObjectArgs);
         return fileStream;
     }
 
-    public Task DeleteAsync(DeleteObject obj)
+    public Task DeleteAsync(string path, string name)
     {
         throw new NotImplementedException();
     }

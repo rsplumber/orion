@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Data.Sql.Migrations
 {
-    [DbContext(typeof(ObjectStorageDbContext))]
+    [DbContext(typeof(OrionDbContext))]
     partial class ObjectStorageDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)

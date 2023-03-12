@@ -11,7 +11,7 @@ internal static class ApplicationBuilderExtension
         if (serviceScope == null) return;
         try
         {
-            var context = serviceScope.ServiceProvider.GetRequiredService<ObjectStorageDbContext>();
+            var context = serviceScope.ServiceProvider.GetRequiredService<OrionDbContext>();
             context.Database.Migrate();
         }
         catch (Exception)

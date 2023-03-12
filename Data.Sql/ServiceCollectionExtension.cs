@@ -11,7 +11,7 @@ public static class ServiceCollectionExtension
 {
     public static void AddData(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ObjectStorageDbContext>(
+        services.AddDbContext<OrionDbContext>(
             builder => builder.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddScoped<IFileRepository, FileRepository>();
         services.AddScoped<IFileQuery, FileQuery>();

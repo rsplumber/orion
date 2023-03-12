@@ -1,13 +1,14 @@
 ﻿using Core.Files;
+using Core.Replications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using File = Core.Files.File;
 
 namespace Data.Sql;
 
-public class ObjectStorageDbContext : DbContext
+public class OrionDbContext : DbContext
 {
-    public ObjectStorageDbContext(DbContextOptions<ObjectStorageDbContext> options) : base(options)
+    public OrionDbContext(DbContextOptions<OrionDbContext> options) : base(options)
     {
     }
 
@@ -16,10 +17,13 @@ public class ObjectStorageDbContext : DbContext
 
     public DbSet<FileLocation> FileLocations { get; set; }
 
+    public DbSet<Replication> Replications { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new FileEntityTypeConfiguration());
         builder.ApplyConfiguration(new FileLocationEntityTypeConfiguration());
+        builder.ApplyConfiguration(new ReplicationEntityTypeConfiguration());
         base.OnModelCreating(builder);
     }
 
@@ -72,19 +76,48 @@ public class ObjectStorageDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("id");
 
-            builder.Property(location => location.Location)
+            builder.Property(location => location.Link)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("location");
 
-            builder.Property(location => location.Filename)
+            builder.Property(location => location.Path)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("filename");
-
+                .HasColumnName("path");
 
             builder.Property(location => location.Provider)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("provider");
             builder.HasIndex(location => location.Provider);
+        }
+    }
+
+    private class ReplicationEntityTypeConfiguration : IEntityTypeConfiguration<Replication>
+    {
+        public void Configure(EntityTypeBuilder<Replication> builder)
+        {
+            builder.Property(replication => replication.Id)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("id");
+
+            builder.Property(replication => replication.FileId)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("file_id");
+
+            builder.Property(replication => replication.Provider)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("provider_name");
+
+            builder.Property(replication => replication.Retry)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("retry");
+
+            builder.Property(replication => replication.Status)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("status");
+
+            builder.Property(replication => replication.CreatedDateUtc)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("created_date_utc");
         }
     }
 }

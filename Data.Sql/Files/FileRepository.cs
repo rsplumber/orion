@@ -6,9 +6,9 @@ namespace Data.Sql.Files;
 
 public class FileRepository : IFileRepository
 {
-    private readonly ObjectStorageDbContext _dbContext;
+    private readonly OrionDbContext _dbContext;
 
-    public FileRepository(ObjectStorageDbContext dbContext)
+    public FileRepository(OrionDbContext dbContext)
     {
         _dbContext = dbContext;
     }

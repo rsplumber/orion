@@ -2,11 +2,11 @@ namespace Providers.Abstractions;
 
 public interface IStorageService
 {
-    public string ProviderName { get; }
+    public string Provider { get; }
 
     Task<string> PutAsync(Stream stream, PutObject obj);
 
-    Task<MemoryStream> GetAsync(GetObject obj);
+    Task<MemoryStream> GetAsync(string path, string name);
 
-    Task DeleteAsync(DeleteObject obj);
+    Task DeleteAsync(string path, string name);
 }

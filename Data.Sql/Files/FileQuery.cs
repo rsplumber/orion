@@ -6,9 +6,9 @@ internal sealed class FileQuery : IFileQuery
 {
     private const string DefaultProvider = "local";
 
-    private readonly ObjectStorageDbContext _dbContext;
+    private readonly OrionDbContext _dbContext;
 
-    public FileQuery(ObjectStorageDbContext dbContext)
+    public FileQuery(OrionDbContext dbContext)
     {
         _dbContext = dbContext;
     }

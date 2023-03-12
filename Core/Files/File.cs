@@ -5,6 +5,8 @@ public class File
     public Guid Id { get; set; } = Guid.NewGuid();
 
     public string Name { get; set; } = default!;
+    
+    public string Path { get; set; } = default!;
 
     public Dictionary<string, string> Metas { get; set; } = new();
 
