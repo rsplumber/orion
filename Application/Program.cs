@@ -1,4 +1,5 @@
 using Application;
+using Data.InMemory;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -29,6 +30,7 @@ builder.Services.AddSwaggerDoc(settings =>
     settings.Version = "v1";
 }, addJWTBearerAuth: false, maxEndpointVersion: 1);
 
+builder.Services.AddInMemoryData();
 
 builder.Services.AddObjectStorageService(builder.Configuration);
 
