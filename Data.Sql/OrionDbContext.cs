@@ -22,7 +22,7 @@ public class OrionDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new FileEntityTypeConfiguration());
-        builder.ApplyConfiguration(new FileLocationEntityTypeConfiguration());
+        // builder.ApplyConfiguration(new FileLocationEntityTypeConfiguration());
         builder.ApplyConfiguration(new ReplicationEntityTypeConfiguration());
         base.OnModelCreating(builder);
     }
@@ -59,42 +59,18 @@ public class OrionDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("created_date_utc");
 
-            builder.HasMany(file => file.Locations)
-                .WithOne()
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.OwnsMany(file => file.Locations);
         }
     }
 
-    private class FileLocationEntityTypeConfiguration : IEntityTypeConfiguration<FileLocation>
-    {
-        public void Configure(EntityTypeBuilder<FileLocation> builder)
-        {
-            builder.ToTable("file_locations")
-                .HasKey(location => location.Id);
-
-            builder.Property(location => location.Id)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("id");
-
-            builder.Property(location => location.Link)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("location");
-
-            builder.Property(location => location.Path)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("path");
-
-            builder.Property(location => location.Provider)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("provider");
-            builder.HasIndex(location => location.Provider);
-        }
-    }
 
     private class ReplicationEntityTypeConfiguration : IEntityTypeConfiguration<Replication>
     {
         public void Configure(EntityTypeBuilder<Replication> builder)
         {
+            builder.ToTable("replications")
+                .HasKey(location => location.Id);
+
             builder.Property(replication => replication.Id)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("id");
@@ -105,7 +81,7 @@ public class OrionDbContext : DbContext
 
             builder.Property(replication => replication.Provider)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("provider_name");
+                .HasColumnName("provider");
 
             builder.Property(replication => replication.Retry)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)

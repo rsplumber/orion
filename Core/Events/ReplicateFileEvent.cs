@@ -22,7 +22,7 @@ internal sealed class ReplicateFileEventHandler : ICapSubscribe
         _replicationManagements = replicationManagements;
     }
 
-    [CapSubscribe("orion_file_replicate.*")]
+    [CapSubscribe("orion_file_replicate.minio_test")]
     public async Task HandleAsync(ReplicateFileRequest message)
     {
         var replicationManagements = _replicationManagements.Select(management => management);

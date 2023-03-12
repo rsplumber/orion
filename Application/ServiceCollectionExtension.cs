@@ -1,4 +1,5 @@
-﻿using Core.Files.Services;
+﻿using Core;
+using Core.Files.Services;
 using Data.Sql;
 using MinIO;
 using Minio.Test;
@@ -11,7 +12,7 @@ internal static class ServiceCollectionExtension
     public static void AddOrionService(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddData(configuration);
-        services.AddScoped<IFileService, FileService>();
+        services.AddCore(configuration);
 
         services.AddMinio(configuration);
         services.AddMinioTest(configuration);
