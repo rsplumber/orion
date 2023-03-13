@@ -10,6 +10,8 @@ public sealed class ReplicateFileEvent
     public Guid RequestId { get; set; } = Guid.NewGuid();
 
     public Guid FileId { get; init; } = default!;
+
+    public string Provider { get; init; } = default!;
 }
 
 internal sealed class ReplicateFileEventHandler : ICapSubscribe
@@ -23,15 +25,13 @@ internal sealed class ReplicateFileEventHandler : ICapSubscribe
     }
 
     [CapSubscribe("orion_file_replicate.minio_test")]
-    public async Task HandleAsync(ReplicateFileRequest message)
+    public async Task HandleAsync(ReplicateFileEvent message)
     {
-        var replicationManagements = _replicationManagements.Select(management => management);
-        foreach (var abstractReplicationManagement in replicationManagements)
+        var provider = _replicationManagements.First(management => management.Provider == message.Provider);
+        await provider.SaveAsync(new ReplicateFileRequest(message.RequestId)
         {
-            await abstractReplicationManagement.SaveAsync(new ReplicateFileRequest(message.Id)
-            {
-                FileId = message.FileId
-            });
-        }
+            FileId = message.FileId,
+            Provider = message.Provider
+        });
     }
 }

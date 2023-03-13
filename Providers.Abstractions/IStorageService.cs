@@ -6,7 +6,7 @@ public interface IStorageService
 
     Task<string> PutAsync(Stream stream, PutObject obj);
 
-    MemoryStream GetAsync(string path, string name);
+    Task GetAsync(string path, string name, Action<Stream> stream);
 
     Task DeleteAsync(string path, string name);
 }

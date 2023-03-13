@@ -82,6 +82,7 @@ public abstract class AbstractReplicationManagement
         {
             RequestId = req.Id,
             FileId = req.FileId,
+            Provider = req.Provider
         }, cancellationToken: cancellationToken);
     }
 

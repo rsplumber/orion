@@ -1,8 +1,13 @@
 using Application;
+using Core;
 using Data.InMemory;
+using Data.Sql;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using MinIO;
+using Minio.Test;
+using Savorboard.CAP.InMemoryMessageQueue;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseKestrel(options =>
@@ -30,9 +35,22 @@ builder.Services.AddSwaggerDoc(settings =>
     settings.Version = "v1";
 }, addJWTBearerAuth: false, maxEndpointVersion: 1);
 
+builder.Services.AddData(builder.Configuration);
+builder.Services.AddCore(builder.Configuration);
+
+builder.Services.AddMinio(builder.Configuration);
+builder.Services.AddMinioTest(builder.Configuration);
+
+
+builder.Services.AddCap(x =>
+{
+    // x.UsePostgreSql(configuration.GetConnectionString("Default")
+    // ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings"));
+    x.UseInMemoryMessageQueue();
+    x.UseInMemoryStorage();
+});
 builder.Services.AddInMemoryData();
 
-builder.Services.AddOrionService(builder.Configuration);
 
 var app = builder.Build();
 

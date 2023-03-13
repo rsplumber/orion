@@ -65,6 +65,7 @@ public class FileService : IFileService
             await _capPublisher.PublishAsync(ReplicateFileEvent.EventName + "." + provider.Name, new ReplicateFileEvent
             {
                 FileId = file.Id,
+                Provider = provider.Name
             }, cancellationToken: cancellationToken);
         }
 

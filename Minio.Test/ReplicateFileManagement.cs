@@ -30,22 +30,26 @@ internal sealed class ReplicateFileManagement : AbstractReplicationManagement
         if (!await FileExitsAsync())
         {
             await _client.MakeBucketAsync(new MakeBucketArgs()
-                .WithBucket(pp));
+                .WithBucket(pp), cancellationToken);
         }
-        
-        using (var fs = _storageService.GetAsync(file!.Path, file.Name))
+
+        using var memory = new MemoryStream();
+        await _storageService.GetAsync(file!.Path, file.Name, async stream =>
         {
-            await _client.PutObjectAsync(new PutObjectArgs()
-                .WithBucket(pp)
-                .WithObject(file.Name)
-                .WithStreamData(fs)
-                .WithObjectSize(fs.Length), cancellationToken);
-        }
+            await stream.CopyToAsync(memory, cancellationToken);
+            memory.Seek(0, SeekOrigin.Begin);
+        });
+        
+        await _client.PutObjectAsync(new PutObjectArgs()
+            .WithBucket(pp)
+            .WithObject(file.Name)
+            .WithStreamData(memory)
+            .WithObjectSize(memory.Length), cancellationToken);
 
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
             .WithBucket(pp)
-            .WithObject(pp)
-            .WithExpiry(54656));
+            .WithObject(file.Name)
+            .WithExpiry(546506));
 
 
         async Task<bool> FileExitsAsync()
