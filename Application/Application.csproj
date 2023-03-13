@@ -30,6 +30,7 @@
       <ProjectReference Include="..\Core\Core.csproj" />
       <ProjectReference Include="..\Data.InMemory\Data.InMemory.csproj" />
       <ProjectReference Include="..\Data.Sql\Data.Sql.csproj" />
+      <ProjectReference Include="..\MinIO.Sample\MinIO.Sample.csproj" />
       <ProjectReference Include="..\MinIO.Storage\MinIO.Storage.csproj" />
       <ProjectReference Include="..\Minio.Test\Minio.Test.csproj" />
       <ProjectReference Include="..\Queries\Queries.csproj" />

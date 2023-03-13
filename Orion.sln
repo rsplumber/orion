@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Test", "Minio.Test\Mi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Data.InMemory", "Data.InMemory\Data.InMemory.csproj", "{84E08CC3-9899-47AC-8907-1502BA6568C0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinIO.Sample", "MinIO.Sample\MinIO.Sample.csproj", "{CA4B91DD-A05F-456B-BD13-B4446108F1D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,9 +58,14 @@ Global
 		{84E08CC3-9899-47AC-8907-1502BA6568C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84E08CC3-9899-47AC-8907-1502BA6568C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84E08CC3-9899-47AC-8907-1502BA6568C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA4B91DD-A05F-456B-BD13-B4446108F1D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA4B91DD-A05F-456B-BD13-B4446108F1D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA4B91DD-A05F-456B-BD13-B4446108F1D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA4B91DD-A05F-456B-BD13-B4446108F1D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{F0702247-7E06-4C12-94E2-FFAA2589E407} = {3B84FA98-DDB5-424C-9E0B-803CF89A0480}
 		{9927DA5C-8280-4F27-964F-FF8A7B228BE6} = {3B84FA98-DDB5-424C-9E0B-803CF89A0480}
+		{CA4B91DD-A05F-456B-BD13-B4446108F1D8} = {3B84FA98-DDB5-424C-9E0B-803CF89A0480}
 	EndGlobalSection
 EndGlobal
