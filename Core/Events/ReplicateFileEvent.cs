@@ -24,7 +24,7 @@ internal sealed class ReplicateFileEventHandler : ICapSubscribe
         _replicationManagements = replicationManagements;
     }
 
-    [CapSubscribe("orion_file_replicate.*")]
+    [CapSubscribe("orion_file_replicate.minio_sample")]
     public async Task HandleAsync(ReplicateFileEvent message)
     {
         var provider = _replicationManagements.First(management => management.Provider == message.Provider);

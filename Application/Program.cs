@@ -47,7 +47,7 @@ builder.Services.AddCap(x =>
 {
     x.UsePostgreSql(builder.Configuration.GetConnectionString("Default")
                     ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings"));
-    x.UseKafka("192.168.70.119:9092");
+    x.UseKafka("localhost:9092");
 });
 
 builder.Services.AddInMemoryData();
