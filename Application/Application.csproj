@@ -9,15 +9,13 @@
     <ItemGroup>
         <PackageReference Include="DotNetCore.CAP.Kafka" Version="7.1.0" />
         <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.0" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.3" />
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-        <PackageReference Include="FastEndpoints" Version="5.8.0" />
-        <PackageReference Include="FastEndpoints.Swagger" Version="5.8.0" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.3">
+        <PackageReference Include="FastEndpoints" Version="5.8.1" />
+        <PackageReference Include="FastEndpoints.Swagger" Version="5.8.1" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.3">
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -31,10 +29,6 @@
       <ProjectReference Include="..\MinIO.Storage\MinIO.Storage.csproj" />
       <ProjectReference Include="..\Minio.Test\Minio.Test.csproj" />
       <ProjectReference Include="..\Queries\Queries.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Files" />
     </ItemGroup>
     
     
