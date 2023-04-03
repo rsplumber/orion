@@ -12,7 +12,7 @@ public static class ServiceCollectionExtension
     {
         services.AddScoped<IStorageService, StorageService>();
         services.TryAddScoped<MinioClient>(provider => new MinioClient()
-            .WithEndpoint("localhost:9000")
+            .WithEndpoint("192.168.70.117:9000")
             .WithCredentials("EvZWw7VSbGCm4M9D", "5RQNFh5SI2NVxWiAxVp9VK5tvmWQ7BMN")
             .Build());
     }

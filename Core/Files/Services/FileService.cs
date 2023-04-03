@@ -24,7 +24,7 @@ public class FileService : IFileService
         _providerRepository = providerRepository;
     }
 
-    public async Task<string> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken)
+    public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken)
     {
         var localProvider = _storageService.FirstOrDefault(service => service.Provider == DefaultProvider);
         if (localProvider is null)
@@ -62,14 +62,14 @@ public class FileService : IFileService
 
         foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
         {
-            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
+            await _capPublisher.PublishAsync(ReplicateFileEvent.EventName + "." + provider.Name, new ReplicateFileEvent
             {
                 FileId = file.Id,
                 Provider = provider.Name
             }, cancellationToken: cancellationToken);
         }
 
-        return GenerateLink(file.Id);
+        return new PutFileResponse(file.Id, GenerateLink(file.Id));
     }
 
 

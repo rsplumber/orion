@@ -2,7 +2,7 @@
 
 public interface IFileService
 {
-    Task<string> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default);
+    Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default);
 
     Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default);
 

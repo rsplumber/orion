@@ -6,7 +6,6 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using MinIO;
-using MinIO.Sample;
 using Minio.Test;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -40,8 +39,6 @@ builder.Services.AddCore(builder.Configuration);
 
 builder.Services.AddMinio(builder.Configuration);
 builder.Services.AddMinioTest(builder.Configuration);
-builder.Services.AddMinioSample(builder.Configuration);
-
 
 builder.Services.AddCap(options =>
 {

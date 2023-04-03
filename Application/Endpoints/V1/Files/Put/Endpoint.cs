@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Application.Endpoints.V1.Files.Put;
 
-internal sealed class Endpoint : Endpoint<Request>
+internal sealed class Endpoint : Endpoint<Request, PutFileResponse>
 {
     private readonly IFileService _fileService;
 
@@ -23,19 +23,20 @@ internal sealed class Endpoint : Endpoint<Request>
 
     public override async Task HandleAsync(Request request, CancellationToken ct)
     {
-        var location = string.Empty;
         if (Files.Count > 0)
         {
             var file = Files[0];
 
-            location = await _fileService.PutAsync(file.OpenReadStream(), new PutFileRequest
+            var response = await _fileService.PutAsync(file.OpenReadStream(), new PutFileRequest
             {
                 Name = file.FileName,
                 Extension = Path.GetExtension(file.FileName),
             }, ct);
+            await SendOkAsync(response, ct);
+            return;
         }
 
-        await SendOkAsync(location, ct);
+        await SendErrorsAsync(cancellation: ct);
     }
 }
 
