@@ -5,7 +5,7 @@ namespace Core.Events;
 
 public sealed record ReplicatedFileEvent
 {
-    public const string EventName = "orion_file_replicated";
+    public const string EventName = "orion.file.replicated";
 
     public Guid Id { get; init; }
 }

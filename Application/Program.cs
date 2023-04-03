@@ -43,11 +43,20 @@ builder.Services.AddMinioTest(builder.Configuration);
 builder.Services.AddMinioSample(builder.Configuration);
 
 
-builder.Services.AddCap(x =>
+builder.Services.AddCap(options =>
 {
-    x.UsePostgreSql(builder.Configuration.GetConnectionString("Default")
-                    ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings"));
-    x.UseKafka("localhost:9092");
+    options.UseRabbitMQ(op =>
+    {
+        op.HostName = builder.Configuration.GetValue<string>("RabbitMQ:HostName") ?? throw new ArgumentNullException("RabbitMQ:HostName", "Enter RabbitMQ:HostName in app settings");
+        op.UserName = builder.Configuration.GetValue<string>("RabbitMQ:UserName") ?? throw new ArgumentNullException("RabbitMQ:UserName", "Enter RabbitMQ:UserName in app settings");
+        op.Password = builder.Configuration.GetValue<string>("RabbitMQ:Password") ?? throw new ArgumentNullException("RabbitMQ:Password", "Enter RabbitMQ:UserName in app settings");
+        op.ExchangeName = builder.Configuration.GetValue<string>("RabbitMQ:ExchangeName") ?? throw new ArgumentNullException("RabbitMQ:ExchangeName", "Enter RabbitMQ:ExchangeName in app settings");
+    });
+    options.UsePostgreSql(sqlOptions =>
+    {
+        sqlOptions.ConnectionString = builder.Configuration.GetConnectionString("default") ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings");
+        sqlOptions.Schema = "events";
+    });
 });
 
 builder.Services.AddInMemoryData();

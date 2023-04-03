@@ -5,7 +5,7 @@ namespace Core.Events;
 
 public sealed class ReplicateFileEvent
 {
-    public const string EventName = "orion_file_replicate";
+    public const string EventName = "orion.file.replicate";
 
     public Guid RequestId { get; set; } = Guid.NewGuid();
 
@@ -24,7 +24,7 @@ internal sealed class ReplicateFileEventHandler : ICapSubscribe
         _replicationManagements = replicationManagements;
     }
 
-    [CapSubscribe("orion_file_replicate.*")]
+    [CapSubscribe("orion.file.replicate.*")]
     public async Task HandleAsync(ReplicateFileEvent message)
     {
         var provider = _replicationManagements.First(management => management.Provider == message.Provider);

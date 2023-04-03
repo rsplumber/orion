@@ -5,7 +5,7 @@ namespace Core.Events;
 
 public sealed record ReplicateFileFailedEvent
 {
-    public const string EventName = "orion_replication_failed";
+    public const string EventName = "orion.replication.failed";
 
     public Guid Id { get; init; }
 }

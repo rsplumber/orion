@@ -48,7 +48,7 @@ public class FileService : IFileService
             Path = filePath,
             Metas = new Dictionary<string, string>
             {
-                {"Extension", req.Extension}
+                { "Extension", req.Extension }
             }
         };
 
@@ -62,7 +62,7 @@ public class FileService : IFileService
 
         foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
         {
-            await _capPublisher.PublishAsync(ReplicateFileEvent.EventName + "." + provider.Name, new ReplicateFileEvent
+            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
             {
                 FileId = file.Id,
                 Provider = provider.Name
