@@ -1,6 +1,6 @@
-﻿using Core.Events;
-using Core.Files.Services;
+﻿using Core.Files.Services;
 using Core.Replications;
+using Core.Replications.Events;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -13,6 +13,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<ReplicateFileEventHandler>();
         services.AddScoped<ReplicateFileFailedEventHandler>();
+        services.AddScoped<ReplicatedFileEventHandler>();
     }
 
     public static void AddProvider<TProvider>(this IServiceCollection services)

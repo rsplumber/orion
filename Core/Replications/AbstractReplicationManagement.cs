@@ -1,4 +1,4 @@
-using Core.Events;
+using Core.Replications.Events;
 using DotNetCore.CAP;
 
 namespace Core.Replications;

@@ -1,9 +1,8 @@
-﻿using Core.Events;
-using Core.Files.Exceptions;
+﻿using Core.Files.Exceptions;
 using Core.Providers;
+using Core.Replications.Events;
 using CSharpVitamins;
 using DotNetCore.CAP;
-using Providers.Abstractions;
 
 namespace Core.Files.Services;
 
@@ -48,7 +47,7 @@ public class FileService : IFileService
             Path = filePath,
             Metas = new Dictionary<string, string>
             {
-                { "Extension", req.Extension }
+                {"Extension", req.Extension}
             }
         };
 
@@ -62,7 +61,8 @@ public class FileService : IFileService
 
         foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
         {
-            await _capPublisher.PublishAsync(ReplicateFileEvent.EventName + "." + provider.Name, new ReplicateFileEvent
+            //Todo Must define provider name for event name : {name}.{providerName}
+            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}", new ReplicateFileEvent
             {
                 FileId = file.Id,
                 Provider = provider.Name

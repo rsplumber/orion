@@ -1,5 +1,5 @@
+using Core;
 using Minio;
-using Providers.Abstractions;
 
 namespace MinIO;
 

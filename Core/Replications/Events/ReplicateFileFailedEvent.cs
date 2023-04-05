@@ -1,7 +1,6 @@
-﻿using Core.Replications;
-using DotNetCore.CAP;
+﻿using DotNetCore.CAP;
 
-namespace Core.Events;
+namespace Core.Replications.Events;
 
 public sealed record ReplicateFileFailedEvent
 {
@@ -20,7 +19,7 @@ internal sealed class ReplicateFileFailedEventHandler : ICapSubscribe
         _replicationRepository = replicationRepository;
     }
 
-    [CapSubscribe(ReplicateFileFailedEvent.EventName)]
+    [CapSubscribe(ReplicateFileFailedEvent.EventName, Group = "orion.file.replicate.failed.queue")]
     public async Task HandleAsync(ReplicateFileFailedEvent message, CancellationToken cancellationToken = default)
     {
         var replication = await _replicationRepository.FindAsync(message.Id, cancellationToken);

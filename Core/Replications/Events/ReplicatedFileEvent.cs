@@ -1,7 +1,6 @@
-﻿using Core.Replications;
-using DotNetCore.CAP;
+﻿using DotNetCore.CAP;
 
-namespace Core.Events;
+namespace Core.Replications.Events;
 
 public sealed record ReplicatedFileEvent
 {
@@ -10,17 +9,17 @@ public sealed record ReplicatedFileEvent
     public Guid Id { get; init; }
 }
 
-internal sealed class NotificationSentEventHandler : ICapSubscribe
+internal sealed class ReplicatedFileEventHandler : ICapSubscribe
 {
     private readonly IReplicationRepository _replicationRepository;
 
 
-    public NotificationSentEventHandler(IReplicationRepository replicationRepository)
+    public ReplicatedFileEventHandler(IReplicationRepository replicationRepository)
     {
         _replicationRepository = replicationRepository;
     }
 
-    [CapSubscribe(ReplicatedFileEvent.EventName)]
+    [CapSubscribe(ReplicatedFileEvent.EventName, Group = "orion.file.replicated.queue")]
     public async Task HandleAsync(ReplicatedFileEvent message, CancellationToken cancellationToken = default)
     {
         var replication = await _replicationRepository.FindAsync(message.Id, cancellationToken);

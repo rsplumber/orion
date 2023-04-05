@@ -1,7 +1,7 @@
-﻿using Core.Files;
+﻿using Core;
+using Core.Files;
 using Core.Replications;
 using DotNetCore.CAP;
-using Providers.Abstractions;
 
 namespace Minio.Test;
 
@@ -39,7 +39,7 @@ internal sealed class ReplicateFileManagement : AbstractReplicationManagement
             await stream.CopyToAsync(memory, cancellationToken);
             memory.Seek(0, SeekOrigin.Begin);
         });
-        
+
         await _client.PutObjectAsync(new PutObjectArgs()
             .WithBucket(pp)
             .WithObject(file.Name)

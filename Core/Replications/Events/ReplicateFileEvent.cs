@@ -1,7 +1,6 @@
-using Core.Replications;
 using DotNetCore.CAP;
 
-namespace Core.Events;
+namespace Core.Replications.Events;
 
 public sealed class ReplicateFileEvent
 {
@@ -24,7 +23,7 @@ internal sealed class ReplicateFileEventHandler : ICapSubscribe
         _replicationManagements = replicationManagements;
     }
 
-    [CapSubscribe("orion.file.replicate.*")]
+    [CapSubscribe("orion.file.replicate", Group = "orion.file.replicate.queue")]
     public async Task HandleAsync(ReplicateFileEvent message)
     {
         var provider = _replicationManagements.First(management => management.Provider == message.Provider);

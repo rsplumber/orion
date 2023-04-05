@@ -1,4 +1,4 @@
-namespace Providers.Abstractions;
+namespace Core;
 
 public sealed record PutObject
 {
