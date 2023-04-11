@@ -32,7 +32,7 @@ public class FileService : IFileService
         }
 
         var id = Guid.NewGuid();
-        var bucketName = string.IsNullOrEmpty(req.FilePath) ? "default" : req.FilePath.Split("/").First();
+        var bucketName = ExtractBucketName(req.FilePath);
         var filePath = ExtractFilePath(req.FilePath);
 
         var link = await localProvider.PutAsync(stream, new PutObject
@@ -119,6 +119,12 @@ public class FileService : IFileService
         return extractedLink.Guid;
     }
 
+    private static string ExtractBucketName(string fullPath)
+    {
+        var test = fullPath.Split('\\').First().ToLower();
+        return string.IsNullOrEmpty(fullPath) ? "default" : fullPath.Split('\\').First().ToLower();
+    }
+
     private static string ExtractFilePath(string fullPath)
     {
         if (string.IsNullOrEmpty(fullPath))
@@ -126,7 +132,13 @@ public class FileService : IFileService
             return string.Empty;
         }
 
+        if (fullPath.EndsWith("\\"))
+        {
+            fullPath = fullPath.Remove(fullPath.Length - 1);
+        }
+
         var file = fullPath.Split('\\').First();
-        return file.Replace(file + "\\", "") + "/";
+        var test = (fullPath.Replace(file + "\\", "") + "/").ToLower();
+        return test;
     }
 }

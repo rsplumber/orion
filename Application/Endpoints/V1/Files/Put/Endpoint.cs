@@ -64,7 +64,7 @@ internal sealed class RequestValidator : Validator<Request>
 internal sealed record Request
 {
     /// <summary>
-    /// "e.g: Data/Files/Images"
+    /// "e.g: data\files\images"
     /// </summary>
     public string FilePath { get; set; } = default!;
 
