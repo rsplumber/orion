@@ -4,13 +4,15 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>CS1591</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.0" />
-        <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.1.0" />
-        <PackageReference Include="FastEndpoints" Version="5.8.1" />
-        <PackageReference Include="FastEndpoints.Swagger" Version="5.8.1" />
+        <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.1.0"/>
+        <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.1.0"/>
+        <PackageReference Include="FastEndpoints" Version="5.8.1"/>
+        <PackageReference Include="FastEndpoints.Swagger" Version="5.8.1"/>
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.4">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,14 +24,13 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Core\Core.csproj" />
-      <ProjectReference Include="..\Data.InMemory\Data.InMemory.csproj" />
-      <ProjectReference Include="..\Data.Sql\Data.Sql.csproj" />
-      <ProjectReference Include="..\Providers\MinIO.Storage\MinIO.Storage.csproj" />
-      <ProjectReference Include="..\Providers\Minio.Test\Minio.Test.csproj" />
-      <ProjectReference Include="..\Queries\Queries.csproj" />
+        <ProjectReference Include="..\Core\Core.csproj"/>
+        <ProjectReference Include="..\Data.InMemory\Data.InMemory.csproj"/>
+        <ProjectReference Include="..\Data.Sql\Data.Sql.csproj"/>
+        <ProjectReference Include="..\Providers\MinIO.Storage\MinIO.Storage.csproj"/>
+        <ProjectReference Include="..\Providers\Minio.Test\Minio.Test.csproj"/>
+        <ProjectReference Include="..\Queries\Queries.csproj"/>
     </ItemGroup>
-    
-    
+
 
 </Project>

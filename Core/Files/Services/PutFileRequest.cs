@@ -7,4 +7,6 @@ public sealed record PutFileRequest
     public string Extension { get; init; } = default!;
 
     public long Lenght { get; init; } = default!;
+    
+    public string FilePath { get; init; } = default!;
 }

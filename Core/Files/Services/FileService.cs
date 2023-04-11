@@ -32,19 +32,21 @@ public class FileService : IFileService
         }
 
         var id = Guid.NewGuid();
-        const string filePath = "default";
+        var bucketName = string.IsNullOrEmpty(req.FilePath) ? "default" : req.FilePath.Split("/").First();
+        var filePath = ExtractFilePath(req.FilePath);
+
         var link = await localProvider.PutAsync(stream, new PutObject
         {
             Length = req.Lenght,
-            Name = id + req.Extension,
-            Path = filePath
+            Name = filePath + id + req.Extension,
+            Path = bucketName
         });
 
         var file = new File
         {
             Id = id,
-            Name = id + req.Extension,
-            Path = filePath,
+            Name = filePath + id + req.Extension,
+            Path = bucketName,
             Metas = new Dictionary<string, string>
             {
                 {"Extension", req.Extension}
@@ -115,5 +117,16 @@ public class FileService : IFileService
     {
         ShortGuid extractedLink = link;
         return extractedLink.Guid;
+    }
+
+    private static string ExtractFilePath(string fullPath)
+    {
+        if (string.IsNullOrEmpty(fullPath))
+        {
+            return string.Empty;
+        }
+
+        var file = fullPath.Split('\\').First();
+        return file.Replace(file + "\\", "") + "/";
     }
 }
