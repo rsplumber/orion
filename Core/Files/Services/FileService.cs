@@ -32,8 +32,7 @@ public class FileService : IFileService
         }
 
         var id = Guid.NewGuid();
-        var bucketName = ExtractBucketName(req.FilePath);
-        var filePath = ExtractFilePath(req.FilePath);
+        var (bucketName, filePath) = ExtractPathData(req.FilePath);
 
         var link = await localProvider.PutAsync(stream, new PutObject
         {
@@ -119,26 +118,23 @@ public class FileService : IFileService
         return extractedLink.Guid;
     }
 
-    private static string ExtractBucketName(string fullPath)
-    {
-        var test = fullPath.Split('\\').First().ToLower();
-        return string.IsNullOrEmpty(fullPath) ? "default" : fullPath.Split('\\').First().ToLower();
-    }
 
-    private static string ExtractFilePath(string fullPath)
+    private static (string, string) ExtractPathData(string fullPath)
     {
         if (string.IsNullOrEmpty(fullPath))
         {
-            return string.Empty;
+            return (string.Empty, string.Empty);
         }
 
-        if (fullPath.EndsWith("\\"))
+        var pathArray = SplitPath();
+        var bucketName = pathArray[0].ToLower();
+        var filePath = string.Join("/", pathArray[Range.StartAt(1)]) + "/".ToLower();
+        return (bucketName, filePath);
+
+        string[] SplitPath()
         {
-            fullPath = fullPath.Remove(fullPath.Length - 1);
+            var splitPath = fullPath.Split("/");
+            return splitPath.Length > 1 ? splitPath : fullPath.Split("\\");
         }
-
-        var file = fullPath.Split('\\').First();
-        var test = (fullPath.Replace(file + "\\", "") + "/").ToLower();
-        return test;
     }
 }
