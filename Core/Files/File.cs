@@ -1,6 +1,6 @@
 namespace Core.Files;
 
-public class File
+public sealed class File
 {
     public Guid Id { get; set; } = Guid.NewGuid();
 

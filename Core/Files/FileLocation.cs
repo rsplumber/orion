@@ -1,6 +1,6 @@
 namespace Core.Files;
 
-public class FileLocation
+public sealed class FileLocation
 {
     public string Link { get; set; } = default!;
 

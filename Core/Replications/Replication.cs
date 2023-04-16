@@ -2,11 +2,11 @@ using Core.Replications.Types;
 
 namespace Core.Replications;
 
-public class Replication
+public sealed class Replication
 {
     public Guid Id { get; set; }
 
-    public Guid FileId { get; init; } = default!;
+    public Guid FileId { get; init; }
 
     public string Provider { get; init; } = default!;
     public int Retry { get; private set; }

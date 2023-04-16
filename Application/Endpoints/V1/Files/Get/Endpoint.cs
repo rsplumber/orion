@@ -1,9 +1,10 @@
 using Core.Files.Services;
 using FastEndpoints;
+using FluentValidation;
 
 namespace Application.Endpoints.V1.Files.Get;
 
-internal sealed class Endpoint : Endpoint<Request>
+file sealed class Endpoint : Endpoint<Request>
 {
     private readonly IFileService _fileService;
 
@@ -14,7 +15,7 @@ internal sealed class Endpoint : Endpoint<Request>
 
     public override void Configure()
     {
-        Get("files/{Link}");
+        Get("files/{link}");
         AllowAnonymous();
         Version(1);
     }
@@ -29,17 +30,27 @@ internal sealed class Endpoint : Endpoint<Request>
     }
 }
 
-internal sealed class EndpointSummary : Summary<Endpoint>
+file sealed class EndpointSummary : Summary<Endpoint>
 {
     public EndpointSummary()
     {
         Summary = "Get file location in the system";
         Description = "Get file location in the system";
-        Response(200, "File location was successfully returned");
+        Response(301, "Redirect to file location");
     }
 }
 
-internal sealed record Request
+file sealed record Request
 {
-    public string Link { get; set; }
+    public string Link { get; set; } = default!;
+}
+
+file sealed class RequestValidator : Validator<Request>
+{
+    public RequestValidator()
+    {
+        RuleFor(request => request.Link)
+            .NotEmpty().WithMessage("Enter Link")
+            .NotNull().WithMessage("Enter Link");
+    }
 }

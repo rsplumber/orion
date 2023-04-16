@@ -8,14 +8,13 @@ namespace Core.Files.Services;
 
 public class FileService : IFileService
 {
-    private const string DefaultProvider = "minio";
     private readonly IFileRepository _fileRepository;
     private readonly IProviderRepository _providerRepository;
-    private readonly IEnumerable<IStorageService> _storageService;
+    private readonly IStorageService _storageService;
     private readonly ICapPublisher _capPublisher;
 
 
-    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IEnumerable<IStorageService> storageService, IProviderRepository providerRepository)
+    public FileService(IFileRepository fileRepository, ICapPublisher capPublisher, IStorageService storageService, IProviderRepository providerRepository)
     {
         _fileRepository = fileRepository;
         _capPublisher = capPublisher;
@@ -25,16 +24,10 @@ public class FileService : IFileService
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken)
     {
-        var localProvider = _storageService.FirstOrDefault(service => service.Provider == DefaultProvider);
-        if (localProvider is null)
-        {
-            throw new ProviderNotFoundException();
-        }
-
         var id = Guid.NewGuid();
         var (bucketName, filePath) = ExtractPathData(req.FilePath);
 
-        var link = await localProvider.PutAsync(stream, new PutObject
+        var link = await _storageService.PutAsync(stream, new PutObject
         {
             Length = req.Lenght,
             Name = filePath + id + req.Extension,
@@ -48,26 +41,28 @@ public class FileService : IFileService
             Path = bucketName,
             Metas = new Dictionary<string, string>
             {
-                {"Extension", req.Extension}
+                { "Extension", req.Extension }
             }
         };
 
         file.Add(new FileLocation
         {
             Link = link,
-            Provider = localProvider.Provider,
+            Provider = _storageService.Provider,
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
 
         foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
         {
-            //Todo Must define provider name for event name : {name}.{providerName}
-            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}", new ReplicateFileEvent
+            await Task.Run(() =>
             {
-                FileId = file.Id,
-                Provider = provider.Name
-            }, cancellationToken: cancellationToken);
+                _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
+                {
+                    FileId = file.Id,
+                    Provider = provider.Name
+                }, cancellationToken: cancellationToken);
+            }, cancellationToken);
         }
 
         return new PutFileResponse(file.Id, GenerateLink(file.Id));
@@ -76,15 +71,8 @@ public class FileService : IFileService
 
     public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
     {
-        var provider = _storageService.FirstOrDefault(service => service.Provider == DefaultProvider);
-
-        if (provider is null)
-        {
-            throw new ProviderNotFoundException();
-        }
-
         var file = await _fileRepository.FindAsync(req.Id, cancellationToken);
-        await provider.DeleteAsync(file!.Name, file.Path);
+        await _storageService.DeleteAsync(file!.Name, file.Path);
     }
 
     public async Task<string> GetLocationAsync(GetFileRequest req, CancellationToken cancellationToken = default)
@@ -126,15 +114,16 @@ public class FileService : IFileService
             return (string.Empty, string.Empty);
         }
 
-        var pathArray = SplitPath();
-        var bucketName = pathArray[0].ToLower();
-        var filePath = string.Join("/", pathArray[Range.StartAt(1)]) + "/".ToLower();
+        var pathArray = SplitPath(fullPath.ToLower());
+        var bucketName = pathArray.First();
+        var filePath = $"{string.Join("/", pathArray[Range.StartAt(1)])}/";
         return (bucketName, filePath);
 
-        string[] SplitPath()
+        string[] SplitPath(string path)
         {
-            var splitPath = fullPath.Split("/");
-            return splitPath.Length > 1 ? splitPath : fullPath.Split("\\");
+            var splitPath = path.Split("/");
+            var finalSplit = splitPath.Length > 1 ? splitPath : path.Split("\\");
+            return finalSplit.Where(s => s.Length > 0).ToArray();
         }
     }
 }

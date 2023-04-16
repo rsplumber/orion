@@ -2,7 +2,7 @@ using Core.Providers.Types;
 
 namespace Core.Providers;
 
-public class Provider
+public sealed class Provider
 {
     public string Name { get; set; } = default!;
 

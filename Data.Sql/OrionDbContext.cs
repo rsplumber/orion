@@ -78,10 +78,14 @@ public class OrionDbContext : DbContext
             builder.Property(replication => replication.FileId)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("file_id");
+            
+            builder.HasIndex(replication => replication.FileId);
 
             builder.Property(replication => replication.Provider)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("provider");
+            
+            builder.HasIndex(replication => replication.Provider);
 
             builder.Property(replication => replication.Retry)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)

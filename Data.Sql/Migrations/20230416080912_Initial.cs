@@ -69,6 +69,16 @@ namespace Data.Sql.Migrations
                 name: "IX_files_name",
                 table: "files",
                 column: "name");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_replications_file_id",
+                table: "replications",
+                column: "file_id");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_replications_provider",
+                table: "replications",
+                column: "provider");
         }
 
         /// <inheritdoc />

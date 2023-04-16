@@ -1,18 +1,18 @@
+using System.Text.Json;
 using Application;
 using Core;
 using Data.InMemory;
 using Data.Sql;
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using KunderaNet.FastEndpoints.Authorization;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using MinIO;
 using Minio.Test;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseKestrel(options =>
-{
-    options.Limits.MaxRequestBodySize = 30720000000; //set to max allowed file size of your system
-});
+builder.WebHost.UseKestrel(options => { options.Limits.MaxRequestBodySize = 100_000_000; });
 
 builder.WebHost.ConfigureKestrel((_, options) =>
 {
@@ -25,6 +25,10 @@ builder.WebHost.ConfigureKestrel((_, options) =>
 });
 
 builder.Services.AddCors();
+builder.Services.AddAuthentication(KunderaDefaults.Scheme)
+    .AddKundera(builder.Configuration);
+builder.Services.AddAuthorization();
+builder.Services.TryAddSingleton<ExceptionHandlerMiddleware>();
 
 builder.Services.AddFastEndpoints();
 builder.Services.AddSwaggerDoc(settings =>
@@ -58,25 +62,23 @@ builder.Services.AddCap(options =>
 
 builder.Services.AddInMemoryData();
 
-
 var app = builder.Build();
-
 
 app.UseCors(b => b.AllowAnyHeader()
     .AllowAnyMethod()
     .SetIsOriginAllowed(_ => true)
     .AllowCredentials());
+app.UseMiddleware<ExceptionHandlerMiddleware>();
 
 app.UseFastEndpoints(config =>
 {
-    config.Endpoints.RoutePrefix = "api";
+    config.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    config.Endpoints.RoutePrefix = "orion/api";
     config.Versioning.Prefix = "v";
     config.Versioning.PrependToRoute = true;
-    config.Endpoints.Filter = ep => ep.EndpointTags?.Contains("hidden") is not true;
 });
 
 app.UseObjectStorage(builder.Configuration);
-
 
 // if (app.Environment.IsDevelopment())
 // {

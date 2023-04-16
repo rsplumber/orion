@@ -1,8 +1,12 @@
+using Core;
+
 namespace Data.InMemory.Providers.Exceptions;
 
-public class ProviderNameExistsException : ApplicationException
+public class ProviderNameExistsException : OrionException
 {
-    public ProviderNameExistsException(string name) : base($"Provider {name} exists")
+    private const int DefaultCode = 400;
+
+    public ProviderNameExistsException(string name) : base(DefaultCode, $"Provider {name} exists")
     {
     }
 }

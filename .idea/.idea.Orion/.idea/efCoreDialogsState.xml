@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EfCoreDialogsState">
+    <option name="keyValueStorage">
+      <map>
+        <entry key="Common:0baf3e12-9901-4874-b3f2-c42edd74e52d:dbContext" value="Data.Sql.OrionDbContext" />
+        <entry key="Common:buildConfiguration" value="Release" />
+        <entry key="Common:noBuild" value="false" />
+        <entry key="Common:outputFolder" value="Migrations" />
+      </map>
+    </option>
+  </component>
+</project>

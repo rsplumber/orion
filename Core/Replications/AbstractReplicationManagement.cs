@@ -35,10 +35,8 @@ public abstract class AbstractReplicationManagement
             return;
         }
 
-        bool replicationSent;
-
         Validate(req.FileId);
-        replicationSent = await ReplicateFileAsync(req.FileId, cancellationToken);
+        var replicationSent = await ReplicateFileAsync(req.FileId, cancellationToken);
 
 
         if (!replicationSent)

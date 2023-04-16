@@ -4,7 +4,7 @@ using FluentValidation;
 
 namespace Application.Endpoints.V1.Files.Put;
 
-internal sealed class Endpoint : Endpoint<Request, PutFileResponse>
+file sealed class Endpoint : Endpoint<Request, PutFileResponse>
 {
     private readonly IFileService _fileService;
 
@@ -16,7 +16,7 @@ internal sealed class Endpoint : Endpoint<Request, PutFileResponse>
     public override void Configure()
     {
         Put("files");
-        AllowAnonymous();
+        Permissions("orion_put_file");
         AllowFileUploads();
         Version(1);
     }
@@ -41,32 +41,36 @@ internal sealed class Endpoint : Endpoint<Request, PutFileResponse>
     }
 }
 
-internal sealed class EndpointSummary : Summary<Endpoint>
+file sealed class EndpointSummary : Summary<Endpoint>
 {
     public EndpointSummary()
     {
         Summary = "Put file in the system";
         Description = "Put file in the system";
-        Response(200, "File was successfully put");
+        Response<PutFileResponse>(200, "File was successfully put");
     }
 }
 
-internal sealed class RequestValidator : Validator<Request>
+file sealed class RequestValidator : Validator<Request>
 {
     public RequestValidator()
     {
         RuleFor(request => request.File)
-            .NotEmpty().WithMessage("Put or Upload File")
-            .NotNull().WithMessage("Put or Upload File");
+            .NotEmpty().WithMessage("Add File")
+            .NotNull().WithMessage("Add File");
+
+        RuleFor(request => request.FilePath)
+            .NotEmpty().WithMessage("Add FilePath")
+            .NotNull().WithMessage("Add FilePath");
     }
 }
 
-internal sealed record Request
+file sealed record Request
 {
     /// <summary>
     /// e.g: data\files\images or data/files/images
     /// </summary>
     public string FilePath { get; set; } = default!;
 
-    public IFormFile File { get; set; }
+    public IFormFile File { get; set; } = default!;
 }

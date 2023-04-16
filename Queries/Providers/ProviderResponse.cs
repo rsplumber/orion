@@ -1,10 +1,10 @@
 ﻿namespace Queries.Providers;
 
-public class ProviderResponse
+public sealed record ProviderResponse
 {
-    public string Name { get; set; }
+    public string Name { get; init; } = default!;
 
-    public string Status { get; set; }
+    public string Status { get; init; } = default!;
 
-    public Dictionary<string, string> Metas { get; set; }
+    public Dictionary<string, string> Metas { get; init; } = new();
 }

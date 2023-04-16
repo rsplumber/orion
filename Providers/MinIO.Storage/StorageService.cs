@@ -14,9 +14,7 @@ public class StorageService : IStorageService
 
     public string Provider => "minio";
 
-
     private const int LinkExpireTimeInSeconds = 604800;
-
 
     public async Task<string> PutAsync(Stream stream, PutObject obj)
     {
@@ -56,6 +54,7 @@ public class StorageService : IStorageService
 
     public Task DeleteAsync(string path, string name)
     {
-        throw new NotImplementedException();
+        return _client.RemoveObjectAsync(new RemoveObjectArgs()
+            .WithBucket(path + name));
     }
 }

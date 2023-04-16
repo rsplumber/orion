@@ -5,7 +5,6 @@ using Data.Sql.Replications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Queries.Files;
 
 namespace Data.Sql;
 
@@ -17,6 +16,5 @@ public static class ServiceCollectionExtension
             builder => builder.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddScoped<IFileRepository, FileRepository>();
         services.AddScoped<IReplicationRepository, ReplicationRepository>();
-        services.AddScoped<IFileQuery, FileQuery>();
     }
 }
