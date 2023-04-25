@@ -1,16 +1,19 @@
 using Core.Files.Services;
 using FastEndpoints;
 using FluentValidation;
+using KunderaNet.Authorization;
 
 namespace Application.Endpoints.V1.Files.Put;
 
 file sealed class Endpoint : Endpoint<Request, PutFileResponse>
 {
     private readonly IFileService _fileService;
+    private readonly ICurrentUserService _currentUserService;
 
-    public Endpoint(IFileService fileService)
+    public Endpoint(IFileService fileService, ICurrentUserService currentUserService)
     {
         _fileService = fileService;
+        _currentUserService = currentUserService;
     }
 
     public override void Configure()
@@ -31,7 +34,8 @@ file sealed class Endpoint : Endpoint<Request, PutFileResponse>
             {
                 Name = file.FileName,
                 Extension = Path.GetExtension(file.FileName),
-                FilePath = request.FilePath
+                FilePath = request.FilePath,
+                OwnerId = _currentUserService.User().Id
             }, ct);
             await SendOkAsync(response, ct);
             return;

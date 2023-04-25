@@ -9,4 +9,6 @@ public sealed record PutFileRequest
     public long Lenght { get; init; } = default!;
     
     public string FilePath { get; init; } = default!;
+    
+    public Guid OwnerId { get; init; } = default!;
 }

@@ -25,7 +25,7 @@ public class FileService : IFileService
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken)
     {
         var id = Guid.NewGuid();
-        var (bucketName, filePath) = ExtractPathData(req.FilePath);
+        var (bucketName, filePath) = ExtractPathData(req);
 
         var link = await _storageService.PutAsync(stream, new PutObject
         {
@@ -107,15 +107,15 @@ public class FileService : IFileService
     }
 
 
-    private static (string, string) ExtractPathData(string fullPath)
+    private static (string, string) ExtractPathData(PutFileRequest req)
     {
-        if (string.IsNullOrEmpty(fullPath))
+        if (string.IsNullOrEmpty(req.FilePath))
         {
             return (string.Empty, string.Empty);
         }
 
-        var pathArray = SplitPath(fullPath.ToLower());
-        var bucketName = pathArray.First();
+        var pathArray = SplitPath(req.FilePath);
+        var bucketName = req.OwnerId.ToString();
         var filePath = $"{string.Join("/", pathArray[Range.StartAt(1)])}/";
         return (bucketName, filePath);
 

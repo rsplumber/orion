@@ -42,7 +42,7 @@ builder.Services.AddData(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
 
 builder.Services.AddMinio(builder.Configuration);
-builder.Services.AddMinioTest(builder.Configuration);
+// builder.Services.AddMinioTest(builder.Configuration);
 
 builder.Services.AddCap(options =>
 {
