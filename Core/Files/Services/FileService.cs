@@ -116,7 +116,7 @@ public class FileService : IFileService
 
         var pathArray = SplitPath(req.FilePath);
         var bucketName = req.OwnerId.ToString();
-        var filePath = $"{string.Join("/", pathArray[Range.StartAt(1)])}/";
+        var filePath = $"{string.Join("/", pathArray[Range.StartAt(0)])}/";
         return (bucketName, filePath);
 
         string[] SplitPath(string path)

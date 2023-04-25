@@ -36,6 +36,7 @@ builder.Services.AddSwaggerDoc(settings =>
     settings.Title = "ObjectStorage - WebApi";
     settings.DocumentName = "v1";
     settings.Version = "v1";
+    settings.AddKunderaAuth();
 }, addJWTBearerAuth: false, maxEndpointVersion: 1);
 
 builder.Services.AddData(builder.Configuration);
