@@ -20,6 +20,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Minio.Test", "Providers\Min
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Replicators", "Replicators", "{7086E015-55D9-4A3B-BF21-3C1F1013276D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docker", "Docker", "{313DBB27-8C73-401A-A93D-BD14F578E530}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

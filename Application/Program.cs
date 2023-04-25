@@ -17,11 +17,11 @@ builder.WebHost.UseKestrel(options => { options.Limits.MaxRequestBodySize = 100_
 builder.WebHost.ConfigureKestrel((_, options) =>
 {
     options.ListenAnyIP(5161, _ => { });
-    options.ListenAnyIP(5162, listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-        listenOptions.UseHttps();
-    });
+    // options.ListenAnyIP(5162, listenOptions =>
+    // {
+    //     listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+    //     listenOptions.UseHttps();
+    // });
 });
 
 builder.Services.AddCors();
