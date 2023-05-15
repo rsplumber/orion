@@ -1,4 +1,5 @@
-﻿using Core.Files;
+﻿using System.Text.Json;
+using Core.Files;
 using Core.Replications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,6 +9,12 @@ namespace Data.Sql;
 
 public class OrionDbContext : DbContext
 {
+    private static readonly JsonSerializerOptions DefaultSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        IgnoreReadOnlyFields = true
+    };
+
     public OrionDbContext(DbContextOptions<OrionDbContext> options) : base(options)
     {
     }
@@ -15,20 +22,17 @@ public class OrionDbContext : DbContext
 
     public DbSet<File> Files { get; set; }
 
-    public DbSet<FileLocation> FileLocations { get; set; }
-
     public DbSet<Replication> Replications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new FileEntityTypeConfiguration());
-        // builder.ApplyConfiguration(new FileLocationEntityTypeConfiguration());
         builder.ApplyConfiguration(new ReplicationEntityTypeConfiguration());
         base.OnModelCreating(builder);
     }
 
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new CancellationToken())
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
         return await base.SaveChangesAsync(cancellationToken);
     }
@@ -59,10 +63,13 @@ public class OrionDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("created_date_utc");
 
-            builder.OwnsMany(file => file.Locations);
+            builder.Property(e => e.Locations)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("locations")
+                .HasColumnType("jsonb");
+            
         }
     }
-
 
     private class ReplicationEntityTypeConfiguration : IEntityTypeConfiguration<Replication>
     {
@@ -78,13 +85,13 @@ public class OrionDbContext : DbContext
             builder.Property(replication => replication.FileId)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("file_id");
-            
+
             builder.HasIndex(replication => replication.FileId);
 
             builder.Property(replication => replication.Provider)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("provider");
-            
+
             builder.HasIndex(replication => replication.Provider);
 
             builder.Property(replication => replication.Retry)

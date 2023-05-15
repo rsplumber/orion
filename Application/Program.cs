@@ -3,16 +3,15 @@ using Application;
 using Core;
 using Data.InMemory;
 using Data.Sql;
+using Elastic.Apm.NetCoreAll;
 using FastEndpoints;
 using FastEndpoints.Swagger;
 using KunderaNet.FastEndpoints.Authorization;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using MinIO;
-using Minio.Test;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseKestrel(options => { options.Limits.MaxRequestBodySize = 100_000_000; });
+builder.WebHost.UseKestrel(options => { options.Limits.MaxRequestBodySize = 50_000_000; });
 
 builder.WebHost.ConfigureKestrel((_, options) =>
 {
@@ -23,7 +22,7 @@ builder.WebHost.ConfigureKestrel((_, options) =>
     //     listenOptions.UseHttps();
     // });
 });
-
+builder.Services.AddHealthChecks();
 builder.Services.AddCors();
 builder.Services.AddAuthentication(KunderaDefaults.Scheme)
     .AddKundera(builder.Configuration);
@@ -31,13 +30,19 @@ builder.Services.AddAuthorization();
 builder.Services.TryAddSingleton<ExceptionHandlerMiddleware>();
 
 builder.Services.AddFastEndpoints();
-builder.Services.AddSwaggerDoc(settings =>
+
+builder.Services.SwaggerDocument(settings =>
 {
-    settings.Title = "ObjectStorage - WebApi";
-    settings.DocumentName = "v1";
-    settings.Version = "v1";
-    settings.AddKunderaAuth();
-}, addJWTBearerAuth: false, maxEndpointVersion: 1);
+    settings.DocumentSettings = generatorSettings =>
+    {
+        generatorSettings.Title = "ObjectStorage - WebApi";
+        generatorSettings.DocumentName = "v1";
+        generatorSettings.Version = "v1";
+        generatorSettings.AddKunderaAuth();
+    };
+    settings.EnableJWTBearerAuth = false;
+    settings.MaxEndpointVersion = 1;
+});
 
 builder.Services.AddData(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
@@ -69,8 +74,11 @@ app.UseCors(b => b.AllowAnyHeader()
     .AllowAnyMethod()
     .SetIsOriginAllowed(_ => true)
     .AllowCredentials());
-app.UseMiddleware<ExceptionHandlerMiddleware>();
 
+app.UseHealthChecks("/health");
+app.UseMiddleware<ExceptionHandlerMiddleware>();
+app.UseObjectStorage(builder.Configuration);
+app.UseAllElasticApm(builder.Configuration);
 app.UseFastEndpoints(config =>
 {
     config.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -79,7 +87,6 @@ app.UseFastEndpoints(config =>
     config.Versioning.PrependToRoute = true;
 });
 
-app.UseObjectStorage(builder.Configuration);
 
 // if (app.Environment.IsDevelopment())
 // {

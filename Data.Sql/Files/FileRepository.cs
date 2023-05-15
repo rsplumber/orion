@@ -31,13 +31,8 @@ public class FileRepository : IFileRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Files
-            .Include
-                (f => f.Locations)
-            .AsNoTracking()
-            .Where(f => f.Id == id)
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        return _dbContext.Files.FirstOrDefaultAsync(f => f.Id == id, cancellationToken: cancellationToken);
     }
 }

@@ -30,11 +30,8 @@ public class ReplicationRepository : IReplicationRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<Replication?> FindAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<Replication?> FindAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return await _dbContext.Replications
-            .AsNoTracking()
-            .Where(r => r.Id == id)
-            .FirstOrDefaultAsync(cancellationToken: cancellationToken);
+        return _dbContext.Replications.FirstOrDefaultAsync(r => r.Id == id, cancellationToken: cancellationToken);
     }
 }
