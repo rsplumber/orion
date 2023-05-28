@@ -47,7 +47,8 @@ public class FileService : IFileService
 
         file.Add(new FileLocation
         {
-            Link = link,
+            Link = link.Url,
+            ExpireDateUtc = link.ExpireDateTimeUtc,
             Provider = _storageService.Provider,
         });
 
@@ -90,8 +91,13 @@ public class FileService : IFileService
             throw new LocationNotFoundException();
         }
 
-        var fileLocation = file.Locations.First(location => location.Provider == "minio").Link;
-        return fileLocation;
+        var fileLocation = file.Locations.First(location => location.Provider == "minio");
+        if (fileLocation.ExpireDateUtc > DateTime.UtcNow) return fileLocation.Link;
+        var link = await _storageService.RefreshLinkAsync(file.Path, file.Name);
+        fileLocation.Link = link.Url;
+        fileLocation.ExpireDateUtc = link.ExpireDateTimeUtc;
+        await _fileRepository.UpdateAsync(file, cancellationToken);
+        return fileLocation.Link;
     }
 
     private static string GenerateLink(Guid fileId)

@@ -14,9 +14,10 @@ public class StorageService : IStorageService
 
     public string Provider => "minio";
 
-    private const int LinkExpireTimeInSeconds = 604800;
+    private const int LinkExpireTimeInSeconds = 518400;
 
-    public async Task<string> PutAsync(Stream stream, PutObject obj)
+
+    public async Task<Link> PutAsync(Stream stream, PutObject obj)
     {
         if (!await FileExitsAsync())
         {
@@ -35,7 +36,11 @@ public class StorageService : IStorageService
             .WithObject(obj.Name)
             .WithExpiry(LinkExpireTimeInSeconds));
 
-        return url;
+        return new Link()
+        {
+            Url = url,
+            ExpireDateTimeUtc = DateTime.UtcNow.AddSeconds(LinkExpireTimeInSeconds)
+        };
 
         async Task<bool> FileExitsAsync()
         {
@@ -50,6 +55,20 @@ public class StorageService : IStorageService
             .WithBucket(path)
             .WithObject(name)
             .WithCallbackStream(outStream));
+    }
+
+    public async Task<Link> RefreshLinkAsync(string path, string name)
+    {
+        var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
+            .WithBucket(path)
+            .WithObject(name)
+            .WithExpiry(LinkExpireTimeInSeconds));
+
+        return new Link()
+        {
+            Url = url,
+            ExpireDateTimeUtc = DateTime.UtcNow.AddSeconds(LinkExpireTimeInSeconds)
+        };
     }
 
     public Task DeleteAsync(string path, string name)
