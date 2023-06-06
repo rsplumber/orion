@@ -22,17 +22,17 @@ public class StorageService : IStorageService
         if (!await FileExitsAsync())
         {
             await _client.MakeBucketAsync(new MakeBucketArgs()
-                .WithBucket(obj.Path));
+                .WithBucket(obj.BucketName));
         }
 
         await _client.PutObjectAsync(new PutObjectArgs()
-                .WithBucket(obj.Path)
+                .WithBucket(obj.BucketName)
                 .WithObject(obj.Name)
                 .WithStreamData(stream)
                 .WithObjectSize(stream.Length))
             ;
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(obj.Path)
+            .WithBucket(obj.BucketName)
             .WithObject(obj.Name)
             .WithExpiry(LinkExpireTimeInSeconds));
 
@@ -44,7 +44,7 @@ public class StorageService : IStorageService
 
         async Task<bool> FileExitsAsync()
         {
-            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(obj.Path));
+            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(obj.BucketName));
         }
     }
 
@@ -74,6 +74,8 @@ public class StorageService : IStorageService
     public Task DeleteAsync(string path, string name)
     {
         return _client.RemoveObjectAsync(new RemoveObjectArgs()
-            .WithBucket(path + name));
+            .WithBucket(path.Split("/")[0])
+            .WithObject(path + name));
+        //todo delete not working 
     }
 }

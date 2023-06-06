@@ -31,14 +31,14 @@ public class FileService : IFileService
         {
             Length = req.Lenght,
             Name = filePath + id + req.Extension,
-            Path = bucketName
+            BucketName = bucketName
         });
 
         var file = new File
         {
             Id = id,
-            Name = filePath + id + req.Extension,
-            Path = bucketName,
+            Name = id + req.Extension,
+            Path = bucketName + "/" + filePath,
             Metas = new Dictionary<string, string>
             {
                 { "Extension", req.Extension }
@@ -72,8 +72,9 @@ public class FileService : IFileService
 
     public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
     {
-        var file = await _fileRepository.FindAsync(req.Id, cancellationToken);
-        await _storageService.DeleteAsync(file!.Name, file.Path);
+        var fileId = ExtractId(req.Link);
+        var file = await _fileRepository.FindAsync(fileId, cancellationToken);
+        await _storageService.DeleteAsync(file!.Path, file.Name);
     }
 
     public async Task<string> GetLocationAsync(GetFileRequest req, CancellationToken cancellationToken = default)
