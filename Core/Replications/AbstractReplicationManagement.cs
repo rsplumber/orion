@@ -21,13 +21,15 @@ public abstract class AbstractReplicationManagement
 
     protected abstract Task<bool> ReplicateFileAsync(Guid filedId, CancellationToken cancellationToken);
 
+    protected abstract Task<bool> DeleteFileAsync(Guid filedId, CancellationToken cancellationToken);
+
     protected virtual void Validate(Guid filedId)
     {
     }
 
     public async Task SaveAsync(ReplicateFileRequest req, CancellationToken cancellationToken = default)
     {
-        var replication = await GetOrAddReplication(req, cancellationToken);
+        var replication = await GetOrAddReplication(req.Id, req.FileId, cancellationToken);
 
         if (MaximumRetryReached(replication))
         {
@@ -48,22 +50,47 @@ public abstract class AbstractReplicationManagement
         await RaiseReplicatedEventAsync(req.Id, cancellationToken);
     }
 
+    public async Task DeleteAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
+    {
+        var replication = await _replicationRepository.FindAsync(req.Id, cancellationToken);
+
+        if (replication is null)
+        {
+            return;
+        }
+
+        if (MaximumRetryReached(replication))
+        {
+            return;
+        }
+
+        var fileDeleted = await DeleteFileAsync(req.FileId, cancellationToken);
+
+        if (!fileDeleted)
+        {
+            await RaiseDeleteFileEventAsync(req, cancellationToken);
+            return;
+        }
+
+        await RaiseFileDeletedEventAsync(req.Id, cancellationToken);
+    }
+
 
     private bool MaximumRetryReached(Replication replication)
     {
         return replication.Retry >= MaximumRetryCount;
     }
 
-    private async Task<Replication> GetOrAddReplication(ReplicateFileRequest req, CancellationToken cancellationToken)
+    private async Task<Replication> GetOrAddReplication(Guid replicationId, Guid fileId, CancellationToken cancellationToken)
     {
-        var replication = await _replicationRepository.FindAsync(req.Id, cancellationToken);
+        var replication = await _replicationRepository.FindAsync(replicationId, cancellationToken);
         if (replication is null)
         {
             var createdNotification = new Replication
             {
-                Id = req.Id,
+                Id = replicationId,
                 Provider = Provider,
-                FileId = req.FileId,
+                FileId = fileId,
             };
             await _replicationRepository.AddAsync(createdNotification, cancellationToken);
             return createdNotification;
@@ -84,9 +111,19 @@ public abstract class AbstractReplicationManagement
         }, cancellationToken: cancellationToken);
     }
 
+    private async Task RaiseDeleteFileEventAsync(DeleteFileRequest req, CancellationToken cancellationToken = default)
+    {
+        await _eventBus.PublishAsync(DeleteFileEvent.EventName, new DeleteFileEvent
+        {
+            RequestId = req.Id,
+            FileId = req.FileId,
+            Provider = req.Provider
+        }, cancellationToken: cancellationToken);
+    }
+
     private async Task RaiseFailedEventAsync(Replication replication, CancellationToken cancellationToken = default)
     {
-        await _eventBus.PublishAsync(ReplicateFileFailedEvent.EventName, new ReplicatedFileEvent()
+        await _eventBus.PublishAsync(ReplicateFileFailedEvent.EventName, new ReplicateFileFailedEvent()
         {
             Id = replication.Id
         }, cancellationToken: cancellationToken);
@@ -95,6 +132,14 @@ public abstract class AbstractReplicationManagement
     private async Task RaiseReplicatedEventAsync(Guid id, CancellationToken cancellationToken = default)
     {
         await _eventBus.PublishAsync(ReplicatedFileEvent.EventName, new ReplicatedFileEvent
+        {
+            Id = id
+        }, cancellationToken: cancellationToken);
+    }
+
+    private async Task RaiseFileDeletedEventAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        await _eventBus.PublishAsync(FileDeletedEvent.EventName, new FileDeletedEvent
         {
             Id = id
         }, cancellationToken: cancellationToken);

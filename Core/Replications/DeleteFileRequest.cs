@@ -1,6 +1,6 @@
 ﻿namespace Core.Replications;
 
-public sealed record ReplicateFileRequest(Guid Id)
+public sealed record DeleteFileRequest(Guid Id)
 {
     public Guid FileId { get; init; }
 

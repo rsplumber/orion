@@ -75,6 +75,25 @@ public class FileService : IFileService
         var fileId = ExtractId(req.Link);
         var file = await _fileRepository.FindAsync(fileId, cancellationToken);
         await _storageService.DeleteAsync(file!.Path, file.Name);
+        file.Locations.Remove(file.Locations.First(location => location.Provider == _storageService.Provider));
+        if (file.Locations.Count == 0)
+        {
+            await _fileRepository.DeleteAsync(file, cancellationToken);
+            return;
+        }
+
+        await _fileRepository.UpdateAsync(file, cancellationToken);
+        foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
+        {
+            await Task.Run(() =>
+            {
+                _capPublisher.PublishAsync($"{DeleteFileEvent.EventName}.{provider.Name}", new DeleteFileEvent
+                {
+                    FileId = file.Id,
+                    Provider = provider.Name
+                }, cancellationToken: cancellationToken);
+            }, cancellationToken);
+        }
     }
 
     public async Task<string> GetLocationAsync(GetFileRequest req, CancellationToken cancellationToken = default)
