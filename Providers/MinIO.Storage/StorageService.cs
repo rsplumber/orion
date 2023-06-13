@@ -71,11 +71,12 @@ public class StorageService : IStorageService
         };
     }
 
-    public Task DeleteAsync(string path, string name)
+    public async Task DeleteAsync(string path, string name)
     {
-        return _client.RemoveObjectAsync(new RemoveObjectArgs()
-            .WithBucket(path.Split("/")[0])
-            .WithObject(path + name));
-        //todo delete not working 
+        var bucketName = path.Split("/").First();
+        var correctPath = string.Join("/", path.Split("/")[1..]) + name;
+        await _client.RemoveObjectAsync(new RemoveObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(correctPath));
     }
 }
