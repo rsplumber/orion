@@ -49,7 +49,6 @@ builder.Services.AddCore(builder.Configuration);
 
 builder.Services.AddMinio(builder.Configuration);
 // builder.Services.AddMinioTest(builder.Configuration);
-
 builder.Services.AddCap(options =>
 {
     options.UseRabbitMQ(op =>

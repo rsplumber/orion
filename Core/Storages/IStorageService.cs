@@ -1,14 +1,14 @@
-namespace Core;
+namespace Core.Storages;
 
 public interface IStorageService
 {
     public string Provider { get; }
 
-    Task<Link> PutAsync(Stream stream, PutObject obj);
+    Task<FileLink> PutAsync(Stream stream, string name, string bucketName);
 
     Task GetAsync(string path, string name, Action<Stream> stream);
 
-    Task<Link> RefreshLinkAsync(string path, string name);
+    Task<FileLink> RefreshLinkAsync(string path, string name);
 
     Task DeleteAsync(string path, string name);
 }

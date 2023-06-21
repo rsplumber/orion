@@ -1,7 +1,7 @@
-using Core.Files;
+using Core.Replications;
 using DotNetCore.CAP;
 
-namespace Core.Replications.Events;
+namespace Core.Files.Events;
 
 public sealed class FileDeletedEvent
 {
@@ -21,7 +21,7 @@ internal sealed class FileDeletedEventHandler : ICapSubscribe
         _fileRepository = fileRepository;
     }
 
-    [CapSubscribe("orion.file.deleted.*", Group = "orion.file.delete.queue")]
+    [CapSubscribe("orion.file.deleted.*", Group = "orion.core.queue")]
     public async Task HandleAsync(FileDeletedEvent message)
     {
         var replication = await _replicationRepository.FindAsync(message.Id);

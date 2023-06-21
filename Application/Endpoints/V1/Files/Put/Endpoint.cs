@@ -1,4 +1,4 @@
-using Core.Files.Services;
+using Core.Files;
 using FastEndpoints;
 using FluentValidation;
 using KunderaNet.Authorization;
@@ -7,41 +7,41 @@ namespace Application.Endpoints.V1.Files.Put;
 
 file sealed class Endpoint : Endpoint<Request, PutFileResponse>
 {
-    private readonly IFileService _fileService;
+    private readonly IPutFileService _putFileService;
     private readonly ICurrentUserService _currentUserService;
 
-    public Endpoint(IFileService fileService, ICurrentUserService currentUserService)
+
+    public Endpoint(IPutFileService putFileService, ICurrentUserService currentUserService)
     {
-        _fileService = fileService;
+        _putFileService = putFileService;
         _currentUserService = currentUserService;
     }
 
     public override void Configure()
     {
         Put("files");
-        Permissions("orion_put_file");
+        Permissions("files_put");
         AllowFileUploads();
         Version(1);
     }
 
     public override async Task HandleAsync(Request request, CancellationToken ct)
     {
-        if (Files.Count > 0)
+        if (Files.Count == 0)
         {
-            var file = Files[0];
-
-            var response = await _fileService.PutAsync(file.OpenReadStream(), new PutFileRequest
-            {
-                Name = file.FileName,
-                Extension = Path.GetExtension(file.FileName),
-                FilePath = request.FilePath,
-                OwnerId = _currentUserService.User().Id
-            }, ct);
-            await SendOkAsync(response, ct);
+            await SendErrorsAsync(cancellation: ct);
             return;
         }
 
-        await SendErrorsAsync(cancellation: ct);
+        var uploadedFile = Files.First();
+        var response = await _putFileService.PutAsync(uploadedFile.OpenReadStream(), new PutFileRequest
+        {
+            Name = uploadedFile.FileName,
+            Extension = Path.GetExtension(uploadedFile.FileName),
+            FilePath = request.FilePath,
+            OwnerId = _currentUserService.User().Id
+        }, ct);
+        await SendOkAsync(response, ct);
     }
 }
 

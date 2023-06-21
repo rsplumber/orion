@@ -1,4 +1,5 @@
-﻿using Core.Files.Services;
+﻿using Core.Files;
+using Core.Files.Services;
 using Core.Replications;
 using Core.Replications.Events;
 using Microsoft.Extensions.Configuration;
@@ -10,7 +11,11 @@ public static class ServiceCollectionExtension
 {
     public static void AddCore(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IFilePathFinderService, FilePathFinderService>();
+        services.AddScoped<IPutFileService, PutFileService>();
+        services.AddScoped<IDeleteFileService, DeleteFileService>();
+        services.AddScoped<ILocationSelector, LocationSelector>();
+        
         services.AddScoped<ReplicateFileEventHandler>();
         services.AddScoped<ReplicateFileFailedEventHandler>();
         services.AddScoped<ReplicatedFileEventHandler>();

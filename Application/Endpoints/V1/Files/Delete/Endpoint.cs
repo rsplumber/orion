@@ -1,4 +1,4 @@
-using Core.Files.Services;
+using Core.Files;
 using FastEndpoints;
 using FluentValidation;
 
@@ -6,26 +6,23 @@ namespace Application.Endpoints.V1.Files.Delete;
 
 file sealed class Endpoint : Endpoint<Request>
 {
-    private readonly IFileService _fileService;
+    private readonly IDeleteFileService _deleteFileService;
 
-    public Endpoint(IFileService fileService)
+    public Endpoint(IDeleteFileService deleteFileService)
     {
-        _fileService = fileService;
+        _deleteFileService = deleteFileService;
     }
 
     public override void Configure()
     {
         Delete("files/{Link}");
-        Permissions("orion_put_file");
+        Permissions("files_delete");
         Version(1);
     }
 
-    public override async Task HandleAsync(Request request, CancellationToken ct)
+    public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        await _fileService.DeleteAsync(new DeleteFileRequest()
-        {
-            Link = request.Link
-        }, ct);
+        await _deleteFileService.DeleteAsync(req.Link, ct);
         await SendOkAsync(ct);
     }
 }
@@ -36,7 +33,7 @@ file sealed class EndpointSummary : Summary<Endpoint>
     {
         Summary = "Delete file in the system";
         Description = "Delete file in the system";
-        Response<PutFileResponse>(200, "File was successfully Deleted");
+        Response(200, "File was successfully Deleted");
     }
 }
 

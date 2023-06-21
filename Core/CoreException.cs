@@ -1,8 +1,8 @@
 ﻿namespace Core;
 
-public class OrionException : ApplicationException
+public class CoreException : ApplicationException
 {
-    public OrionException(int code, string message)
+    public CoreException(int code, string message)
     {
         Code = code;
         Message = message;

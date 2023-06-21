@@ -1,4 +1,4 @@
-using Core;
+using Core.Storages;
 using Minio;
 
 namespace MinIO;
@@ -17,26 +17,26 @@ public class StorageService : IStorageService
     private const int LinkExpireTimeInSeconds = 518400;
 
 
-    public async Task<Link> PutAsync(Stream stream, PutObject obj)
+    public async Task<FileLink> PutAsync(Stream stream, string name, string bucketName)
     {
         if (!await FileExitsAsync())
         {
             await _client.MakeBucketAsync(new MakeBucketArgs()
-                .WithBucket(obj.BucketName));
+                .WithBucket(bucketName));
         }
 
         await _client.PutObjectAsync(new PutObjectArgs()
-                .WithBucket(obj.BucketName)
-                .WithObject(obj.Name)
+                .WithBucket(bucketName)
+                .WithObject(name)
                 .WithStreamData(stream)
                 .WithObjectSize(stream.Length))
             ;
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(obj.BucketName)
-            .WithObject(obj.Name)
+            .WithBucket(bucketName)
+            .WithObject(name)
             .WithExpiry(LinkExpireTimeInSeconds));
 
-        return new Link()
+        return new FileLink()
         {
             Url = url,
             ExpireDateTimeUtc = DateTime.UtcNow.AddSeconds(LinkExpireTimeInSeconds)
@@ -44,7 +44,7 @@ public class StorageService : IStorageService
 
         async Task<bool> FileExitsAsync()
         {
-            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(obj.BucketName));
+            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
         }
     }
 
@@ -57,14 +57,17 @@ public class StorageService : IStorageService
             .WithCallbackStream(outStream));
     }
 
-    public async Task<Link> RefreshLinkAsync(string path, string name)
+    public async Task<FileLink> RefreshLinkAsync(string path, string name)
     {
+        var pathArray = path.Split("/");
+        var bucket = pathArray.First();
+        var objectName = $"{string.Join("/", pathArray[1..])}{name}";
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(path)
-            .WithObject(name)
+            .WithBucket(bucket)
+            .WithObject(objectName)
             .WithExpiry(LinkExpireTimeInSeconds));
 
-        return new Link()
+        return new FileLink
         {
             Url = url,
             ExpireDateTimeUtc = DateTime.UtcNow.AddSeconds(LinkExpireTimeInSeconds)

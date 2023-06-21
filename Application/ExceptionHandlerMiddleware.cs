@@ -21,7 +21,7 @@ public sealed class ExceptionHandlerMiddleware : IMiddleware
             string message;
             switch (exception)
             {
-                case OrionException orionException:
+                case CoreException orionException:
                     response.StatusCode = orionException.Code;
                     message = orionException.Message;
                     break;

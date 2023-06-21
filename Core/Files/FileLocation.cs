@@ -6,5 +6,5 @@ public sealed record FileLocation
 
     public string Provider { get; set; } = default!;
 
-    public DateTime ExpireDateUtc { get; set; } = DateTime.UtcNow.AddDays(-1);
+    public DateTime? ExpireDateUtc { get; set; }
 }

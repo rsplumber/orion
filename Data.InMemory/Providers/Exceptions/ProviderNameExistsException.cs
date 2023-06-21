@@ -2,7 +2,7 @@ using Core;
 
 namespace Data.InMemory.Providers.Exceptions;
 
-public class ProviderNameExistsException : OrionException
+public class ProviderNameExistsException : CoreException
 {
     private const int DefaultCode = 400;
 

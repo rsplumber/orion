@@ -16,5 +16,9 @@ public static class ServiceCollectionExtension
             builder => builder.UseNpgsql(configuration.GetConnectionString("Default")));
         services.AddScoped<IFileRepository, FileRepository>();
         services.AddScoped<IReplicationRepository, ReplicationRepository>();
+        services.AddScoped<IFileLocationResolver, FileLocationResolver>();
+        services.AddTransient<FileDeletedEventHandler>();
+        services.AddTransient<FileLocationRefreshedEventHandler>();
+        services.AddDistributedMemoryCache();
     }
 }

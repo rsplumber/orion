@@ -23,7 +23,7 @@ internal sealed class DeleteFileEventHandler : ICapSubscribe
         _replicationManagements = replicationManagements;
     }
 
-    [CapSubscribe("orion.file.delete.*", Group = "orion.file.delete.queue")]
+    [CapSubscribe("orion.file.delete.*", Group = "orion.files.replications.delete.queue")]
     public async Task HandleAsync(DeleteFileEvent message)
     {
         var provider = _replicationManagements.First(management => management.Provider == message.Provider);

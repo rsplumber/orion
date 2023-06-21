@@ -1,6 +1,6 @@
 namespace Core.Files.Exceptions;
 
-public class ProviderNotFoundException : OrionException
+public class ProviderNotFoundException : CoreException
 {
     private const int DefaultCode = 404;
     private const string DefaultMessage = "Provider Not found";

@@ -1,4 +1,4 @@
-using Core.Files.Services;
+using Core.Files;
 using FastEndpoints;
 using FluentValidation;
 
@@ -6,9 +6,9 @@ namespace Application.Endpoints.V1.Files.Get;
 
 file sealed class Endpoint : Endpoint<Request>
 {
-    private readonly IFileService _fileService;
+    private readonly IFilePathFinderService _fileService;
 
-    public Endpoint(IFileService fileService)
+    public Endpoint(IFilePathFinderService fileService)
     {
         _fileService = fileService;
     }
@@ -22,10 +22,13 @@ file sealed class Endpoint : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var location = await _fileService.GetLocationAsync(new GetFileRequest
+        var location = await _fileService.GetAbsolutePathAsync(req.Link, ct);
+        if (location is null)
         {
-            Link = req.Link
-        }, ct);
+            await SendNotFoundAsync(ct);
+            return;
+        }
+
         await SendRedirectAsync(location, false, ct);
     }
 }

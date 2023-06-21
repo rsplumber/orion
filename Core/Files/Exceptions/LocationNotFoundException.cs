@@ -1,6 +1,6 @@
 namespace Core.Files.Exceptions;
 
-public class LocationNotFoundException : OrionException
+public class LocationNotFoundException : CoreException
 {
     private const int DefaultCode = 404;
     private const string DefaultMessage = "Location Not found";
