@@ -1,7 +1,7 @@
 using Core.Storages;
 using Minio;
 
-namespace MinIO;
+namespace Storages.MinIO;
 
 public class StorageService : IStorageService
 {

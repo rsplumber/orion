@@ -1,9 +1,10 @@
-﻿using Core.Files;
+using Core.Files;
 using Core.Replications;
 using Core.Storages;
 using DotNetCore.CAP;
+using Minio;
 
-namespace Minio.Test;
+namespace Storages.MinIO;
 
 internal sealed class ReplicateFileManagement : AbstractReplicationManagement
 {
@@ -60,7 +61,7 @@ internal sealed class ReplicateFileManagement : AbstractReplicationManagement
         return false;
     }
 
-    protected override Task<bool> DeleteFileAsync(Guid filedId, CancellationToken cancellationToken)
+    protected override async Task<bool> DeleteFileAsync(Guid filedId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

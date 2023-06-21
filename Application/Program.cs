@@ -9,7 +9,7 @@ using FastEndpoints;
 using FastEndpoints.Swagger;
 using KunderaNet.FastEndpoints.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using MinIO;
+using Storages.MinIO;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseKestrel(options => { options.Limits.MaxRequestBodySize = 50_000_000; });
@@ -48,9 +48,8 @@ builder.Services.SwaggerDocument(settings =>
 builder.Services.AddData(builder.Configuration);
 builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
+builder.Services.AddMinio();
 
-builder.Services.AddMinio(builder.Configuration);
-// builder.Services.AddMinioTest(builder.Configuration);
 builder.Services.AddCap(options =>
 {
     options.UseRabbitMQ(op =>
