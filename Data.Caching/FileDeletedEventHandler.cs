@@ -3,7 +3,7 @@ using Core.Files.Events;
 using DotNetCore.CAP;
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Data.Sql.Files;
+namespace Data.Caching;
 
 public class FileDeletedEventHandler : ICapSubscribe
 {

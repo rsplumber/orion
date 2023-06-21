@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Application;
 using Core;
+using Data.Caching;
 using Data.InMemory;
 using Data.Sql;
 using Elastic.Apm.NetCoreAll;
@@ -45,6 +46,7 @@ builder.Services.SwaggerDocument(settings =>
 });
 
 builder.Services.AddData(builder.Configuration);
+builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
 
 builder.Services.AddMinio(builder.Configuration);
