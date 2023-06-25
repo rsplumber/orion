@@ -13,6 +13,8 @@ public sealed record PutFileRequest
 
     public required string FilePath { get; init; } = default!;
 
+    public Dictionary<string, string>? Configs { get; init; } = new();
+
     public required Guid OwnerId { get; init; }
 }
 

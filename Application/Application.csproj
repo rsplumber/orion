@@ -31,8 +31,8 @@
         <ProjectReference Include="..\Data.Caching\Data.Caching.csproj" />
         <ProjectReference Include="..\Data.InMemory\Data.InMemory.csproj" />
         <ProjectReference Include="..\Data.Sql\Data.Sql.csproj" />
+        <ProjectReference Include="..\Libraries\Processors\ImageProcessor.SixLabors\ImageProcessor.SixLabors.csproj" />
         <ProjectReference Include="..\Providers\Storages.MinIO\Storages.MinIO.csproj" />
-        <ProjectReference Include="..\Providers\Minio.Test\Minio.Test.csproj" />
         <ProjectReference Include="..\Queries\Queries.csproj" />
     </ItemGroup>
 

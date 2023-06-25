@@ -7,6 +7,7 @@ using Data.Sql;
 using Elastic.Apm.NetCoreAll;
 using FastEndpoints;
 using FastEndpoints.Swagger;
+using ImageProcessor.SixLabors;
 using KunderaNet.FastEndpoints.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Storages.MinIO;
@@ -49,6 +50,7 @@ builder.Services.AddData(builder.Configuration);
 builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
 builder.Services.AddMinio();
+builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 
 builder.Services.AddCap(options =>
 {

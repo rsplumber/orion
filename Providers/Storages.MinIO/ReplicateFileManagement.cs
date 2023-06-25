@@ -61,7 +61,7 @@ internal sealed class ReplicateFileManagement : AbstractReplicationManagement
         return false;
     }
 
-    protected override async Task<bool> DeleteFileAsync(Guid filedId, CancellationToken cancellationToken)
+    protected override Task<bool> DeleteFileAsync(Guid filedId, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

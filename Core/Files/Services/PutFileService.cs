@@ -11,13 +11,15 @@ internal sealed class PutFileService : IPutFileService
     private readonly IProviderRepository _providerRepository;
     private readonly IStorageService _storageService;
     private readonly ICapPublisher _capPublisher;
+    private readonly IFileProcessor _imageProcessor;
 
-    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, IStorageService storageService, ICapPublisher capPublisher)
+    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, IStorageService storageService, ICapPublisher capPublisher, IFileProcessor imageProcessor)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
         _storageService = storageService;
         _capPublisher = capPublisher;
+        _imageProcessor = imageProcessor;
     }
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default)
@@ -25,6 +27,12 @@ internal sealed class PutFileService : IPutFileService
         var id = Guid.NewGuid();
         var (bucketName, filePath) = ExtractPathData(req.OwnerId, req.FilePath);
         var fileName = $"{filePath}{id}{req.Extension}";
+        if (req.Configs is not null && req.Configs.Count > 0)
+        {
+            var processor = ResolveFileProcessor(req.Extension);
+            stream = await processor.ProcessAsync(stream, req.Configs, cancellationToken);
+        }
+
         var link = await _storageService.PutAsync(stream, fileName, bucketName);
         var file = new File
         {
@@ -78,6 +86,21 @@ internal sealed class PutFileService : IPutFileService
             var splitPath = path.Split("/");
             var finalSplit = splitPath.Length > 1 ? splitPath : path.Split("\\");
             return finalSplit.Where(s => s.Length > 0).ToArray();
+        }
+    }
+
+    private IFileProcessor ResolveFileProcessor(string extension)
+    {
+        return SanitizeExtension() switch
+        {
+            "jpg" or "jpeg" or "png" or "tiff" or "tif"
+                or "webp" or "web" => _imageProcessor,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        string SanitizeExtension()
+        {
+            return extension.StartsWith(".") ? string.Join("", extension[1..]) : extension;
         }
     }
 }
