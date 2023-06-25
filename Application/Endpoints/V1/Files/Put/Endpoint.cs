@@ -20,8 +20,7 @@ file sealed class Endpoint : Endpoint<Request, PutFileResponse>
     public override void Configure()
     {
         Put("files");
-        // Permissions("files_put");
-        AllowAnonymous();
+        Permissions("files_put");
         AllowFileUploads();
         Version(1);
     }
@@ -40,7 +39,7 @@ file sealed class Endpoint : Endpoint<Request, PutFileResponse>
             Name = uploadedFile.FileName,
             Extension = Path.GetExtension(uploadedFile.FileName),
             FilePath = request.FilePath,
-            OwnerId = Guid.Empty,
+            OwnerId = _currentUserService.User().Id,
             Configs = request.Configs
         }, ct);
         await SendOkAsync(response, ct);
