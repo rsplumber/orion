@@ -46,6 +46,10 @@ public class OrionDbContext : DbContext
             builder.Property(file => file.Name)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("name");
+            
+            builder.Property(file => file.Path)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("path");
 
             builder.Property(file => file.OwnerId)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)

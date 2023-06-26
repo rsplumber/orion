@@ -56,7 +56,8 @@ namespace Data.Sql.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("path");
 
                     b.HasKey("Id");
 

@@ -19,7 +19,7 @@ namespace Data.Sql.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    Path = table.Column<string>(type: "text", nullable: false),
+                    path = table.Column<string>(type: "text", nullable: false),
                     owner_id = table.Column<Guid>(type: "uuid", nullable: false),
                     metas = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
                     locations = table.Column<List<FileLocation>>(type: "jsonb", nullable: false),

@@ -14,7 +14,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Data.Sql.Migrations
 {
     [DbContext(typeof(OrionDbContext))]
-    [Migration("20230626083439_Initial")]
+    [Migration("20230626092018_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -59,7 +59,8 @@ namespace Data.Sql.Migrations
 
                     b.Property<string>("Path")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("path");
 
                     b.HasKey("Id");
 
