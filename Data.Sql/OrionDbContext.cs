@@ -1,6 +1,4 @@
-﻿using System.Text.Json;
-using Core.Files;
-using Core.Replications;
+﻿using Core.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using File = Core.Files.File;
@@ -9,12 +7,6 @@ namespace Data.Sql;
 
 public class OrionDbContext : DbContext
 {
-    private static readonly JsonSerializerOptions DefaultSerializerOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        IgnoreReadOnlyFields = true
-    };
-
     public OrionDbContext(DbContextOptions<OrionDbContext> options) : base(options)
     {
     }
@@ -24,10 +16,13 @@ public class OrionDbContext : DbContext
 
     public DbSet<Replication> Replications { get; set; }
 
+    public DbSet<Provider> Providers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfiguration(new FileEntityTypeConfiguration());
         builder.ApplyConfiguration(new ReplicationEntityTypeConfiguration());
+        builder.ApplyConfiguration(new ProviderEntityTypeConfiguration());
         base.OnModelCreating(builder);
     }
 
@@ -52,6 +47,10 @@ public class OrionDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("name");
 
+            builder.Property(file => file.OwnerId)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("owner_id");
+
             builder.HasIndex(file => file.Name);
 
             builder.Property(file => file.Metas)
@@ -67,7 +66,6 @@ public class OrionDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("locations")
                 .HasColumnType("jsonb");
-            
         }
     }
 
@@ -94,15 +92,46 @@ public class OrionDbContext : DbContext
 
             builder.HasIndex(replication => replication.Provider);
 
-            builder.Property(replication => replication.Retry)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("retry");
-
             builder.Property(replication => replication.Status)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("status");
 
             builder.Property(replication => replication.CreatedDateUtc)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("created_date_utc");
+        }
+    }
+
+
+    private class ProviderEntityTypeConfiguration : IEntityTypeConfiguration<Provider>
+    {
+        public void Configure(EntityTypeBuilder<Provider> builder)
+        {
+            builder.ToTable("providers")
+                .HasKey(provider => provider.Name);
+
+            builder.Property(provider => provider.Name)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("name");
+
+            builder.Property(provider => provider.Status)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("status");
+
+            builder.Property(provider => provider.Replication)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("replication");
+
+            builder.Property(provider => provider.Primary)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("primary");
+
+            builder.Property(provider => provider.Metas)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("metas")
+                .HasColumnType("jsonb");
+
+            builder.Property(provider => provider.CreatedDateUtc)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("created_date_utc");
         }

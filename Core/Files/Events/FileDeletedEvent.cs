@@ -1,4 +1,4 @@
-using Core.Replications;
+using Core.Providers;
 using DotNetCore.CAP;
 
 namespace Core.Files.Events;

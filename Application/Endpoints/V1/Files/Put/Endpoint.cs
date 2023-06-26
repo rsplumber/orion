@@ -33,12 +33,10 @@ file sealed class Endpoint : Endpoint<Request, PutFileResponse>
             return;
         }
 
-        var uploadedFile = Files.First();
-        var response = await _putFileService.PutAsync(uploadedFile.OpenReadStream(), new PutFileRequest
+        var response = await _putFileService.PutAsync(request.File.OpenReadStream(), new PutFileRequest
         {
-            Name = uploadedFile.FileName,
-            Extension = Path.GetExtension(uploadedFile.FileName),
-            FilePath = request.FilePath,
+            Name = request.File.FileName,
+            Path = request.FilePath,
             OwnerId = _currentUserService.User().Id,
             Configs = request.Configs
         }, ct);

@@ -1,6 +1,7 @@
+using Core.Files.Exceptions;
 using Core.Providers;
-using Core.Replications.Events;
-using Core.Storages;
+using Core.Providers.Events;
+using Core.Providers.Types;
 using DotNetCore.CAP;
 
 namespace Core.Files.Services;
@@ -9,39 +10,45 @@ internal sealed class PutFileService : IPutFileService
 {
     private readonly IFileRepository _fileRepository;
     private readonly IProviderRepository _providerRepository;
-    private readonly IStorageService _storageService;
+    private readonly IStorageServiceLocator _storageServiceLocator;
     private readonly ICapPublisher _capPublisher;
     private readonly IFileProcessor _imageProcessor;
 
-    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, IStorageService storageService, ICapPublisher capPublisher, IFileProcessor imageProcessor)
+    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IFileProcessor imageProcessor, IStorageServiceLocator storageServiceLocator)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
-        _storageService = storageService;
         _capPublisher = capPublisher;
         _imageProcessor = imageProcessor;
+        _storageServiceLocator = storageServiceLocator;
     }
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default)
     {
         var id = Guid.NewGuid();
-        var (bucketName, filePath) = ExtractPathData(req.OwnerId, req.FilePath);
-        var fileName = $"{filePath}{id}{req.Extension}";
+        var filePath = $"{req.OwnerId}/{req.Path}";
+        var fileExtension = GetFileExtension(req.Name);
+
         if (req.Configs is not null && req.Configs.Count > 0)
         {
-            var processor = ResolveFileProcessor(req.Extension);
-            stream = await processor.ProcessAsync(stream, req.Configs, cancellationToken);
+            var processor = ResolveFileProcessor(fileExtension);
+            var processedResponse = await processor.ProcessAsync(stream, req.Configs, cancellationToken);
+            stream = processedResponse.Content;
+            fileExtension = GetFileExtension(processedResponse.Name);
         }
 
-        var link = await _storageService.PutAsync(stream, fileName, bucketName);
+        var fileName = $"{id}{fileExtension}";
+        var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
+        var link = await storageService.PutAsync(stream, filePath, fileName);
         var file = new File
         {
             Id = id,
-            Name = id + req.Extension,
-            Path = bucketName + "/" + filePath,
+            Name = fileName,
+            Path = filePath,
+            OwnerId = req.OwnerId,
             Metas = new Dictionary<string, string>
             {
-                { "Extension", req.Extension }
+                { "Extension", fileExtension }
             }
         };
 
@@ -49,44 +56,31 @@ internal sealed class PutFileService : IPutFileService
         {
             Link = link.Url,
             ExpireDateUtc = link.ExpireDateTimeUtc,
-            Provider = _storageService.Provider,
+            Provider = storageService.Name
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
 
-        foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
+        await stream.DisposeAsync();
+
+        var providers = await _providerRepository.FindAsync(cancellationToken);
+        foreach (var provider in providers.Where(provider => provider is
+                 {
+                     Primary: false,
+                     Replication: true,
+                     Status: ProviderStatus.Enable
+                 }))
         {
-            await Task.Run(() =>
+            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
             {
-                _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
-                {
-                    FileId = file.Id,
-                    Provider = provider.Name
-                }, cancellationToken: cancellationToken);
-            }, cancellationToken);
+                FileId = file.Id,
+                Provider = provider.Name
+            }, cancellationToken: cancellationToken);
         }
 
         return new PutFileResponse(file.Id, IdLink.From(file.Id));
-    }
 
-    private static (string, string) ExtractPathData(Guid ownerId, string filePath)
-    {
-        if (string.IsNullOrEmpty(filePath))
-        {
-            return (string.Empty, string.Empty);
-        }
-
-        var pathArray = SplitPath(filePath);
-        var bucketName = ownerId.ToString();
-        var finalPath = $"{string.Join("/", pathArray[Range.StartAt(0)])}/";
-        return (bucketName, finalPath);
-
-        string[] SplitPath(string path)
-        {
-            var splitPath = path.Split("/");
-            var finalSplit = splitPath.Length > 1 ? splitPath : path.Split("\\");
-            return finalSplit.Where(s => s.Length > 0).ToArray();
-        }
+        string GetFileExtension(string name) => Path.HasExtension(name) ? Path.GetExtension(name) : throw new InvalidFileExtensionException();
     }
 
     private IFileProcessor ResolveFileProcessor(string extension)

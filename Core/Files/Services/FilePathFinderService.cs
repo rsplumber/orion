@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using Core.Files.Events;
-using Core.Storages;
+﻿using Core.Files.Events;
 using DotNetCore.CAP;
 
 namespace Core.Files.Services;
@@ -10,16 +8,16 @@ internal sealed class FilePathFinderService : IFilePathFinderService
     private readonly IFileLocationResolver _fileLocationResolver;
     private readonly ILocationSelector _locationSelector;
     private readonly IFileRepository _fileRepository;
-    private readonly IStorageService _storageService;
+    private readonly IStorageServiceLocator _storageServiceLocator;
     private readonly ICapPublisher _capPublisher;
 
-    public FilePathFinderService(IFileLocationResolver fileLocationResolver, IFileRepository fileRepository, IStorageService storageService, ILocationSelector locationSelector, ICapPublisher capPublisher)
+    public FilePathFinderService(IFileLocationResolver fileLocationResolver, IFileRepository fileRepository, ILocationSelector locationSelector, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator)
     {
         _fileLocationResolver = fileLocationResolver;
         _fileRepository = fileRepository;
-        _storageService = storageService;
         _locationSelector = locationSelector;
         _capPublisher = capPublisher;
+        _storageServiceLocator = storageServiceLocator;
     }
 
     public async Task<string?> GetAbsolutePathAsync(string link, CancellationToken cancellationToken = default)
@@ -33,7 +31,8 @@ internal sealed class FilePathFinderService : IFilePathFinderService
 
         var file = await _fileRepository.FindAsync(IdLink.Parse(link), cancellationToken);
         if (file is null) return null;
-        var refreshedLink = await _storageService.RefreshLinkAsync(file.Path, file.Name);
+        var storageService = await _storageServiceLocator.LocateAsync(selectedLocation.Provider, cancellationToken);
+        var refreshedLink = await storageService.RefreshLinkAsync(file.Path, file.Name);
         var needToUpdateLocation = file.Locations.First(location => location.Link == selectedLocation.Link);
         needToUpdateLocation.Link = refreshedLink.Url;
         needToUpdateLocation.ExpireDateUtc = refreshedLink.ExpireDateTimeUtc;

@@ -2,8 +2,8 @@ using System.Text.Json;
 using Application;
 using Core;
 using Data.Caching;
-using Data.InMemory;
 using Data.Sql;
+using DotNetCore.CAP.Messages;
 using Elastic.Apm.NetCoreAll;
 using FastEndpoints;
 using FastEndpoints.Swagger;
@@ -46,14 +46,24 @@ builder.Services.SwaggerDocument(settings =>
     settings.MaxEndpointVersion = 1;
 });
 
-builder.Services.AddData(builder.Configuration);
-builder.Services.AddCaching(builder.Configuration);
-builder.Services.AddCore(builder.Configuration);
-builder.Services.AddMinio();
-builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 
 builder.Services.AddCap(options =>
 {
+    options.FailedRetryCount = 5;
+    options.FailedRetryInterval = 60 * 2;
+    options.FailedMessageExpiredAfter = 60 * 60 * 3;
+    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.JsonSerializerOptions.IgnoreReadOnlyFields = true;
+
+    async void OptionsFailedThresholdCallback(FailedInfo info)
+    {
+        if (info.Message.Value is null) return;
+        // await using var scope = info.ServiceProvider.CreateAsyncScope();
+        // var handler = scope.ServiceProvider.GetRequiredService<EventsRetriesFailedHandler>();
+        // await handler.HandleAsync(id, CancellationToken.None);
+    }
+
+    options.FailedThresholdCallback = OptionsFailedThresholdCallback;
     options.UseRabbitMQ(op =>
     {
         op.HostName = builder.Configuration.GetValue<string>("RabbitMQ:HostName") ?? throw new ArgumentNullException("RabbitMQ:HostName", "Enter RabbitMQ:HostName in app settings");
@@ -68,7 +78,12 @@ builder.Services.AddCap(options =>
     });
 });
 
-builder.Services.AddInMemoryData();
+
+builder.Services.AddData(builder.Configuration);
+builder.Services.AddCaching(builder.Configuration);
+builder.Services.AddCore(builder.Configuration);
+builder.Services.AddMinio();
+builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 
 var app = builder.Build();
 
@@ -79,7 +94,7 @@ app.UseCors(b => b.AllowAnyHeader()
 
 app.UseHealthChecks("/health");
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-app.UseObjectStorage(builder.Configuration);
+app.UseData(builder.Configuration);
 app.UseAllElasticApm(builder.Configuration);
 app.UseFastEndpoints(config =>
 {

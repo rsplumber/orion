@@ -11,4 +11,8 @@
         <PackageReference Include="DotNetCore.CAP" Version="7.1.4" />
     </ItemGroup>
     
+    <ItemGroup>
+      <ProjectReference Include="..\Providers\Storages.Abstractions\Storages.Abstractions.csproj" />
+    </ItemGroup>
+    
 </Project>

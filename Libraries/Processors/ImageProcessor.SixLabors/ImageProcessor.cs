@@ -1,9 +1,13 @@
+using System.Diagnostics;
 using Core;
+using Core.Files;
+using Core.Files.Exceptions;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.Formats.Tiff;
 using SixLabors.ImageSharp.Formats.Webp;
+using File = System.IO.File;
 
 namespace ImageProcessor.SixLabors;
 
@@ -14,12 +18,14 @@ internal sealed class ImageProcessor : IFileProcessor
     private static readonly TiffEncoder TiffEncoder = new();
     private static readonly WebpEncoder WebpEncoder = new();
 
-    public async Task<Stream> ProcessAsync(Stream file, Dictionary<string, string> configs = default!, CancellationToken cancellationToken = default)
+    public async Task<ProcessedResponse> ProcessAsync(Stream file, Dictionary<string, string> configs = default!, CancellationToken cancellationToken = default)
     {
+        var stopwatch = Stopwatch.StartNew();
         if (configs is null) throw new ArgumentNullException(nameof(configs), "Enter valid configs");
         var img = await Image.LoadAsync(file, cancellationToken);
         var finalExtension = SanitizeExtension();
-        var path = $"TempFiles/{Guid.NewGuid()}.{finalExtension}";
+        var name = $"{Guid.NewGuid()}.{finalExtension}";
+        var path = $"TempFiles/{name}";
 
         img.Mutate(x =>
         {
@@ -38,7 +44,13 @@ internal sealed class ImageProcessor : IFileProcessor
         await img.SaveAsync(path, EncoderResolver(finalExtension), cancellationToken);
         var fileStream = File.OpenRead(path);
         File.Delete(path);
-        return fileStream;
+        stopwatch.Stop();
+        return new ProcessedResponse
+        {
+            Content = fileStream,
+            Name = name,
+            ElapsedMilliseconds = stopwatch.ElapsedMilliseconds
+        };
 
         string SanitizeExtension()
         {
