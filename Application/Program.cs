@@ -7,7 +7,8 @@ using DotNetCore.CAP.Messages;
 using Elastic.Apm.NetCoreAll;
 using FastEndpoints;
 using FastEndpoints.Swagger;
-using ImageProcessor.SixLabors;
+using FileProcessor.Abstractions;
+using FileProcessor.Images.SixLabors;
 using KunderaNet.FastEndpoints.Authorization;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Storages.MinIO;
@@ -55,7 +56,7 @@ builder.Services.AddCap(options =>
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.IgnoreReadOnlyFields = true;
 
-    async void OptionsFailedThresholdCallback(FailedInfo info)
+    void OptionsFailedThresholdCallback(FailedInfo info)
     {
         if (info.Message.Value is null) return;
         // await using var scope = info.ServiceProvider.CreateAsyncScope();
@@ -83,6 +84,7 @@ builder.Services.AddData(builder.Configuration);
 builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
 builder.Services.AddMinio();
+builder.Services.AddImageProcessors();
 builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 
 var app = builder.Build();

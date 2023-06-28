@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="SixLabors.ImageSharp" Version="3.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="TempFiles\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\FileProcessor.Abstractions\FileProcessor.Abstractions.csproj" />
+    </ItemGroup>
+
+</Project>

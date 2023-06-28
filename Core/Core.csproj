@@ -12,6 +12,7 @@
     </ItemGroup>
     
     <ItemGroup>
+      <ProjectReference Include="..\Libraries\FileProccessors\FileProcessor.Abstractions\FileProcessor.Abstractions.csproj" />
       <ProjectReference Include="..\Providers\Storages.Abstractions\Storages.Abstractions.csproj" />
     </ItemGroup>
     

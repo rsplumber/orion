@@ -3,6 +3,7 @@ using Core.Providers;
 using Core.Providers.Events;
 using Core.Providers.Types;
 using DotNetCore.CAP;
+using FileProcessor.Abstractions;
 
 namespace Core.Files.Services;
 
@@ -11,16 +12,16 @@ internal sealed class PutFileService : IPutFileService
     private readonly IFileRepository _fileRepository;
     private readonly IProviderRepository _providerRepository;
     private readonly IStorageServiceLocator _storageServiceLocator;
+    private readonly IFileProcessorServiceLocator _fileProcessorServiceLocator;
     private readonly ICapPublisher _capPublisher;
-    private readonly IFileProcessor _imageProcessor;
 
-    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IFileProcessor imageProcessor, IStorageServiceLocator storageServiceLocator)
+    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator, IFileProcessorServiceLocator fileProcessorServiceLocator)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
         _capPublisher = capPublisher;
-        _imageProcessor = imageProcessor;
         _storageServiceLocator = storageServiceLocator;
+        _fileProcessorServiceLocator = fileProcessorServiceLocator;
     }
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default)
@@ -31,7 +32,7 @@ internal sealed class PutFileService : IPutFileService
 
         if (req.Configs is not null && req.Configs.Count > 0)
         {
-            var processor = ResolveFileProcessor(fileExtension);
+            var processor = await _fileProcessorServiceLocator.LocateAsync(fileExtension, cancellationToken);
             var processedResponse = await processor.ProcessAsync(stream, req.Configs, cancellationToken);
             stream = processedResponse.Content;
             fileExtension = GetFileExtension(processedResponse.Name);
@@ -81,20 +82,5 @@ internal sealed class PutFileService : IPutFileService
         return new PutFileResponse(file.Id, IdLink.From(file.Id));
 
         string GetFileExtension(string name) => Path.HasExtension(name) ? Path.GetExtension(name) : throw new InvalidFileExtensionException();
-    }
-
-    private IFileProcessor ResolveFileProcessor(string extension)
-    {
-        return SanitizeExtension() switch
-        {
-            "jpg" or "jpeg" or "png" or "tiff" or "tif"
-                or "webp" or "web" => _imageProcessor,
-            _ => throw new ArgumentOutOfRangeException()
-        };
-
-        string SanitizeExtension()
-        {
-            return extension.StartsWith(".") ? string.Join("", extension[1..]) : extension;
-        }
     }
 }

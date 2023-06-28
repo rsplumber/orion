@@ -1,15 +1,15 @@
 using System.Diagnostics;
-using Core;
-using Core.Files;
-using Core.Files.Exceptions;
+using FileProcessor.Abstractions;
 using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Pbm;
 using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.Formats.Tga;
 using SixLabors.ImageSharp.Formats.Tiff;
 using SixLabors.ImageSharp.Formats.Webp;
-using File = System.IO.File;
 
-namespace ImageProcessor.SixLabors;
+namespace FileProcessor.Images.SixLabors;
 
 internal sealed class ImageProcessor : IFileProcessor
 {
@@ -17,6 +17,23 @@ internal sealed class ImageProcessor : IFileProcessor
     private static readonly PngEncoder PngEncoder = new();
     private static readonly TiffEncoder TiffEncoder = new();
     private static readonly WebpEncoder WebpEncoder = new();
+    private static readonly BmpEncoder BmpEncoder = new();
+    private static readonly TgaEncoder TgaEncoder = new();
+    private static readonly PbmEncoder PbmEncoder = new();
+    private const string TempFilesPath = "../Libraries/FileProccessors/FileProcessor.Images.SixLabors/TempFiles";
+
+    private static readonly List<string> SupportedImages = new()
+    {
+        "jpg", "jpeg", "jpe", "jif", "jfif", "jfi",
+        "png", "tiff", "tif", "webp", "bmp", "dib",
+        "tga", "icb", "vda", "vst", "pbm", "pgm", "ppm", "pnm"
+    };
+
+    public string Type => "images";
+
+    public string Name => "six_labors";
+
+    public IEnumerable<string> SupportedTypes => SupportedImages;
 
     public async Task<ProcessedResponse> ProcessAsync(Stream file, Dictionary<string, string> configs = default!, CancellationToken cancellationToken = default)
     {
@@ -25,7 +42,7 @@ internal sealed class ImageProcessor : IFileProcessor
         var img = await Image.LoadAsync(file, cancellationToken);
         var finalExtension = SanitizeExtension();
         var name = $"{Guid.NewGuid()}.{finalExtension}";
-        var path = $"TempFiles/{name}";
+        var tempFilePath = $"{TempFilesPath}/{name}";
 
         img.Mutate(x =>
         {
@@ -41,9 +58,9 @@ internal sealed class ImageProcessor : IFileProcessor
                 if (imageConfig.Hue is not null) x.Hue(imageConfig.Hue.Value);
             }
         });
-        await img.SaveAsync(path, EncoderResolver(finalExtension), cancellationToken);
-        var fileStream = File.OpenRead(path);
-        File.Delete(path);
+        await img.SaveAsync(tempFilePath, EncoderResolver(finalExtension), cancellationToken);
+        var fileStream = File.OpenRead(tempFilePath);
+        File.Delete(tempFilePath);
         stopwatch.Stop();
         return new ProcessedResponse
         {
@@ -111,10 +128,13 @@ internal sealed class ImageProcessor : IFileProcessor
 
     private static ImageEncoder EncoderResolver(string finalFormat) => finalFormat switch
     {
-        "jpg" or "jpeg" => JpegEncoder,
+        "jpg" or "jpeg" or "jpe" or "jif" or "jfif" or "jfi" => JpegEncoder,
         "png" => PngEncoder,
         "tiff" or "tif" => TiffEncoder,
-        "webp" or "web" => WebpEncoder,
+        "webp" => WebpEncoder,
+        "bmp" or "dib" => BmpEncoder,
+        "tga" or "icb" or "vda" or "vst" => TgaEncoder,
+        "pbm" or "pgm" or "ppm" or "pnm" => PbmEncoder,
         _ => throw new ArgumentOutOfRangeException(nameof(finalFormat), finalFormat, $"{finalFormat} not supported!")
     };
 
