@@ -12,7 +12,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\Core\Core.csproj" />
-      <ProjectReference Include="..\..\Libraries\Processors\ImageProcessor.SixLabors\ImageProcessor.SixLabors.csproj" />
       <ProjectReference Include="..\Storages.Abstractions\Storages.Abstractions.csproj" />
     </ItemGroup>
 
