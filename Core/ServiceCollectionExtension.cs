@@ -13,7 +13,7 @@ public static class ServiceCollectionExtension
 {
     public static void AddCore(this IServiceCollection services, IConfiguration? configuration = default)
     {
-        services.AddScoped<IFilePathFinderService, FilePathFinderService>();
+        services.AddScoped<IFileLocationService, FileLocationService>();
         services.AddScoped<IPutFileService, PutFileService>();
         services.AddScoped<IDeleteFileService, DeleteFileService>();
         services.AddScoped<ILocationSelector, LocationSelector>();

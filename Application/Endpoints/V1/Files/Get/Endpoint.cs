@@ -6,9 +6,9 @@ namespace Application.Endpoints.V1.Files.Get;
 
 file sealed class Endpoint : Endpoint<Request>
 {
-    private readonly IFilePathFinderService _fileService;
+    private readonly IFileLocationService _fileService;
 
-    public Endpoint(IFilePathFinderService fileService)
+    public Endpoint(IFileLocationService fileService)
     {
         _fileService = fileService;
     }
@@ -17,12 +17,13 @@ file sealed class Endpoint : Endpoint<Request>
     {
         Get("files/{link}");
         AllowAnonymous();
+        ResponseCache(60);
         Version(1);
     }
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var location = await _fileService.GetAbsolutePathAsync(req.Link, ct);
+        var location = await _fileService.GetAsync(req.Link, ct);
         if (location is null)
         {
             await SendNotFoundAsync(ct);

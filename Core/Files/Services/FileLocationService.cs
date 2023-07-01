@@ -3,7 +3,7 @@ using DotNetCore.CAP;
 
 namespace Core.Files.Services;
 
-internal sealed class FilePathFinderService : IFilePathFinderService
+internal sealed class FileLocationService : IFileLocationService
 {
     private readonly IFileLocationResolver _fileLocationResolver;
     private readonly ILocationSelector _locationSelector;
@@ -11,7 +11,7 @@ internal sealed class FilePathFinderService : IFilePathFinderService
     private readonly IStorageServiceLocator _storageServiceLocator;
     private readonly ICapPublisher _capPublisher;
 
-    public FilePathFinderService(IFileLocationResolver fileLocationResolver, IFileRepository fileRepository, ILocationSelector locationSelector, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator)
+    public FileLocationService(IFileLocationResolver fileLocationResolver, IFileRepository fileRepository, ILocationSelector locationSelector, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator)
     {
         _fileLocationResolver = fileLocationResolver;
         _fileRepository = fileRepository;
@@ -20,7 +20,7 @@ internal sealed class FilePathFinderService : IFilePathFinderService
         _storageServiceLocator = storageServiceLocator;
     }
 
-    public async Task<string?> GetAbsolutePathAsync(string link, CancellationToken cancellationToken = default)
+    public async Task<string?> GetAsync(string link, CancellationToken cancellationToken = default)
     {
         var fileLocations = await _fileLocationResolver.ResolveAsync(link, cancellationToken);
         if (fileLocations.Count == 0) return null;
