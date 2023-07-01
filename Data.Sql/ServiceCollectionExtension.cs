@@ -5,7 +5,6 @@ using Data.Sql.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Queries.Providers;
 
 namespace Data.Sql;
@@ -19,6 +18,7 @@ public static class ServiceCollectionExtension
         services.AddScoped<IFileRepository, FileRepository>();
         services.AddScoped<IReplicationRepository, ReplicationRepository>();
         services.AddScoped<FileLocationResolver>();
+        services.AddScoped<AbstractFileLocationResolver, FileLocationResolver>();
         services.AddScoped<IFileLocationResolver, FileLocationResolver>();
 
         services.AddScoped<IProviderRepository, ProviderRepository>();

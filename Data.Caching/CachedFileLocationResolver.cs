@@ -1,6 +1,5 @@
 using System.Text.Json;
 using Core.Files;
-using Data.Sql.Files;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace Data.Caching;
@@ -8,12 +7,12 @@ namespace Data.Caching;
 internal sealed class CachedFileLocationResolver : IFileLocationResolver
 {
     private static readonly DistributedCacheEntryOptions DefaultOptions = new DistributedCacheEntryOptions()
-        .SetAbsoluteExpiration(TimeSpan.FromDays(5));
+        .SetAbsoluteExpiration(TimeSpan.FromDays(1));
 
     private readonly IDistributedCache _cacheService;
-    private readonly FileLocationResolver _fileLocationResolver;
+    private readonly AbstractFileLocationResolver _fileLocationResolver;
 
-    public CachedFileLocationResolver(IDistributedCache cacheService, FileLocationResolver fileLocationResolver)
+    public CachedFileLocationResolver(IDistributedCache cacheService, AbstractFileLocationResolver fileLocationResolver)
     {
         _cacheService = cacheService;
         _fileLocationResolver = fileLocationResolver;

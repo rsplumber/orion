@@ -1,5 +1,4 @@
 ﻿using Core.Files;
-using Data.Sql.Files;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,7 +10,6 @@ public static class ServiceCollectionExtension
     {
         if (configuration.GetSection("Caching:Enabled").Value is null || !bool.Parse(configuration.GetSection("Caching:Enabled").Value!))
         {
-            services.AddScoped<IFileLocationResolver, FileLocationResolver>();
             return;
         }
 
