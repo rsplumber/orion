@@ -6,8 +6,9 @@ namespace Data.Caching;
 
 internal sealed class CachedFileLocationResolver : IFileLocationResolver
 {
-    private static readonly DistributedCacheEntryOptions DefaultOptions = new DistributedCacheEntryOptions()
-        .SetAbsoluteExpiration(TimeSpan.FromDays(1));
+    private static readonly DistributedCacheEntryOptions DistributedCacheEntryOptions = new DistributedCacheEntryOptions()
+        .SetAbsoluteExpiration(TimeSpan.FromDays(5))
+        .SetSlidingExpiration(TimeSpan.FromDays(2));
 
     private readonly IDistributedCache _cacheService;
     private readonly AbstractFileLocationResolver _fileLocationResolver;
@@ -28,7 +29,7 @@ internal sealed class CachedFileLocationResolver : IFileLocationResolver
 
         var locations = await _fileLocationResolver.ResolveAsync(link, cancellationToken);
         var locationBytes = JsonSerializer.SerializeToUtf8Bytes(locations);
-        await _cacheService.SetAsync(link, locationBytes, DefaultOptions, cancellationToken);
+        await _cacheService.SetAsync(link, locationBytes, DistributedCacheEntryOptions, cancellationToken);
         return locations;
     }
 }
