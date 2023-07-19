@@ -107,11 +107,11 @@ app.UseFastEndpoints(config =>
 });
 
 
-// if (app.Environment.IsDevelopment())
-// {
-app.UseOpenApi();
-app.UseSwaggerUi3(s => s.ConfigureDefaults());
-// }
+if (app.Environment.IsDevelopment())
+{
+    app.UseOpenApi();
+    app.UseSwaggerUi3(s => s.ConfigureDefaults());
+}
 
 
 await app.RunAsync();
