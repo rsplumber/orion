@@ -20,7 +20,7 @@ internal sealed class ImageProcessor : IFileProcessor
     private static readonly BmpEncoder BmpEncoder = new();
     private static readonly TgaEncoder TgaEncoder = new();
     private static readonly PbmEncoder PbmEncoder = new();
-    private const string TempFilesPath = "../Libraries/FileProccessors/FileProcessor.Images.SixLabors/TempFiles";
+    private const string TempFilesPath = "./ProcessorTempFiles";
 
     private static readonly List<string> SupportedImages = new()
     {
@@ -42,6 +42,11 @@ internal sealed class ImageProcessor : IFileProcessor
         var img = await Image.LoadAsync(file, cancellationToken);
         var finalExtension = SanitizeExtension();
         var name = $"{Guid.NewGuid()}.{finalExtension}";
+        if (!Directory.Exists(TempFilesPath))
+        {
+            Directory.CreateDirectory(TempFilesPath);
+        }
+
         var tempFilePath = $"{TempFilesPath}/{name}";
 
         img.Mutate(x =>

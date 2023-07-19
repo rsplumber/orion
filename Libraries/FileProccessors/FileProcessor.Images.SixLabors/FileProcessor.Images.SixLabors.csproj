@@ -11,10 +11,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="TempFiles\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\FileProcessor.Abstractions\FileProcessor.Abstractions.csproj" />
     </ItemGroup>
 
