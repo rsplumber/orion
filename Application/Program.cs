@@ -10,6 +10,7 @@ using FastEndpoints.Swagger;
 using FileProcessor.Abstractions;
 using FileProcessor.Images.SixLabors;
 using KunderaNet.FastEndpoints.Authorization;
+using KunderaNet.Services.Authorization.Http;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Storages.MinIO;
 
@@ -28,7 +29,7 @@ builder.WebHost.ConfigureKestrel((_, options) =>
 builder.Services.AddHealthChecks();
 builder.Services.AddCors();
 builder.Services.AddAuthentication(KunderaDefaults.Scheme)
-    .AddKundera(builder.Configuration);
+    .AddKundera(builder.Configuration, k => k.UseHttpService(builder.Configuration));
 builder.Services.AddAuthorization();
 builder.Services.TryAddSingleton<ExceptionHandlerMiddleware>();
 
