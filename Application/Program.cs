@@ -36,7 +36,6 @@ builder.Services.AddAuthentication(KunderaDefaults.Scheme)
 builder.Services.AddAuthorization();
 builder.Services.TryAddSingleton<ExceptionHandlerMiddleware>();
 builder.Services.AddResponseCaching();
-builder.Services.AddResponseCompression();
 builder.Services.AddFastEndpoints();
 
 builder.Services.SwaggerDocument(settings =>
@@ -111,7 +110,6 @@ app.Services.UseData(options =>
 });
 app.UseAllElasticApm(builder.Configuration);
 app.UseResponseCaching();
-app.UseResponseCompression();
 app.UseFastEndpoints(config =>
 {
     config.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
