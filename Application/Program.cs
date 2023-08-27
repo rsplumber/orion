@@ -1,8 +1,10 @@
 using System.Text.Json;
 using Application;
 using Core;
-using Data.Caching;
-using Data.Sql;
+using Data.Abstractions;
+using Data.Caching.Abstractions;
+using Data.Caching.InMemory;
+using Data.EF;
 using DotNetCore.CAP.Messages;
 using Elastic.Apm.NetCoreAll;
 using FastEndpoints;
@@ -11,6 +13,7 @@ using FileProcessor.Abstractions;
 using FileProcessor.Images.SixLabors;
 using KunderaNet.FastEndpoints.Authorization;
 using KunderaNet.Services.Authorization.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Storages.MinIO;
 
@@ -32,7 +35,8 @@ builder.Services.AddAuthentication(KunderaDefaults.Scheme)
     .AddKundera(builder.Configuration, k => k.UseHttpService(builder.Configuration));
 builder.Services.AddAuthorization();
 builder.Services.TryAddSingleton<ExceptionHandlerMiddleware>();
-
+builder.Services.AddResponseCaching();
+builder.Services.AddResponseCompression();
 builder.Services.AddFastEndpoints();
 
 builder.Services.SwaggerDocument(settings =>
@@ -81,12 +85,15 @@ builder.Services.AddCap(options =>
 });
 
 
-builder.Services.AddData(builder.Configuration);
-builder.Services.AddCaching(builder.Configuration);
 builder.Services.AddCore(builder.Configuration);
 builder.Services.AddMinio();
 builder.Services.AddImageProcessors();
 builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
+builder.Services.AddData(options =>
+{
+    options.UseEntityFramework(b => b.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    options.AddCaching(cachingOptions => cachingOptions.UseInMemoryCaching());
+});
 
 var app = builder.Build();
 
@@ -97,8 +104,14 @@ app.UseCors(b => b.AllowAnyHeader()
 
 app.UseHealthChecks("/health");
 app.UseMiddleware<ExceptionHandlerMiddleware>();
-app.UseData(builder.Configuration);
+app.Services.UseData(options =>
+{
+    options.UseEntityFramework();
+    options.UseCaching(executionOptions => executionOptions.UseInMemoryCaching());
+});
 app.UseAllElasticApm(builder.Configuration);
+app.UseResponseCaching();
+app.UseResponseCompression();
 app.UseFastEndpoints(config =>
 {
     config.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -106,7 +119,6 @@ app.UseFastEndpoints(config =>
     config.Versioning.Prefix = "v";
     config.Versioning.PrependToRoute = true;
 });
-
 
 if (app.Environment.IsDevelopment())
 {

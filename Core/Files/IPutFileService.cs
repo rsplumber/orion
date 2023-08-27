@@ -1,3 +1,5 @@
+using Core.Files.Exceptions;
+
 namespace Core.Files;
 
 public interface IPutFileService
@@ -14,6 +16,10 @@ public sealed record PutFileRequest
     public required Guid OwnerId { get; init; }
 
     public Dictionary<string, string>? Configs { get; init; } = new();
+
+    public bool HasConfig() => Configs is not null && Configs.Count > 0;
+
+    public string Extension => System.IO.Path.HasExtension(Name) ? System.IO.Path.GetExtension(Name) : throw new InvalidFileExtensionException();
 }
 
 public record PutFileResponse(Guid Id, string Link);

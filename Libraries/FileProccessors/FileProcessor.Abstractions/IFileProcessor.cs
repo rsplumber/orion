@@ -18,4 +18,6 @@ public sealed record ProcessedResponse
     public required string Name { get; init; }
 
     public long ElapsedMilliseconds { get; init; }
+
+    public string Extension => Path.HasExtension(Name) ? Path.GetExtension(Name) : string.Empty;
 }

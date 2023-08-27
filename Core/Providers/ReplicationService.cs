@@ -1,6 +1,7 @@
 using Core.Files;
 using Core.Files.Events;
 using Core.Providers.Events;
+using Core.Providers.Exceptions;
 using DotNetCore.CAP;
 
 namespace Core.Providers;
@@ -23,17 +24,33 @@ public class ReplicationService
     public virtual async Task ReplicateAsync(ReplicateFileRequest request, CancellationToken cancellationToken = default)
     {
         var file = await _fileRepository.FindAsync(request.FileId, cancellationToken);
-        if (file is null)
-        {
-            throw new FileNotFoundException();
-        }
+        if (file is null) throw new FileNotFoundException();
+
+        var primaryStorageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
+        if (primaryStorageService is null) return;
 
         var selectedStorageService = await _storageServiceLocator.LocateAsync(request.Provider, cancellationToken);
-        var primaryStorageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
-        using var memory = new MemoryStream();
-        await primaryStorageService.GetAsync(file.Path, file.Name, DownloadToStream);
+        if (selectedStorageService is null) return;
 
-        await selectedStorageService.PutAsync(memory, file.Path, file.Name);
+        var memoryStream = new MemoryStream();
+        try
+        {
+            await primaryStorageService.GetAsync(file.Path, file.Name, stream =>
+            {
+                stream.CopyTo(memoryStream);
+                memoryStream.Seek(0, SeekOrigin.Begin);
+            });
+
+            await selectedStorageService.PutAsync(memoryStream, file.Path, file.Name);
+        }
+        catch
+        {
+            // ignored
+        }
+        finally
+        {
+            await memoryStream.DisposeAsync();
+        }
 
         var replication = new Replication
         {
@@ -46,23 +63,16 @@ public class ReplicationService
         {
             Id = replication.Id
         }, cancellationToken: cancellationToken);
-
-        async void DownloadToStream(Stream stream)
-        {
-            await stream.CopyToAsync(memory, cancellationToken);
-            memory.Seek(0, SeekOrigin.Begin);
-        }
     }
 
     public virtual async Task DeleteReplicationsAsync(DeleteFileReplicationRequest request, CancellationToken cancellationToken = default)
     {
         var file = await _fileRepository.FindAsync(request.FileId, cancellationToken);
-        if (file is null)
-        {
-            throw new FileNotFoundException();
-        }
+        if (file is null) throw new FileNotFoundException();
 
         var selectedStorageService = await _storageServiceLocator.LocateAsync(request.Provider, cancellationToken);
+        if (selectedStorageService is null) throw new ProviderNotFoundException();
+        
         await selectedStorageService.DeleteAsync(file.Path, file.Name);
         await _capPublisher.PublishAsync(FileDeletedEvent.EventName, new FileDeletedEvent
         {

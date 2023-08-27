@@ -1,4 +1,3 @@
-using Core.Files.Exceptions;
 using Core.Providers;
 using Core.Providers.Events;
 using Core.Providers.Types;
@@ -28,14 +27,14 @@ internal sealed class PutFileService : IPutFileService
     {
         var id = Guid.NewGuid();
         var filePath = $"{req.OwnerId}/{req.Path}";
-        var fileExtension = GetFileExtension(req.Name);
+        var fileExtension = req.Extension;
 
-        if (req.Configs is not null && req.Configs.Count > 0)
+        if (req.HasConfig())
         {
             var processor = await _fileProcessorServiceLocator.LocateAsync(fileExtension, cancellationToken);
-            var processedResponse = await processor.ProcessAsync(stream, req.Configs, cancellationToken);
+            var processedResponse = await processor.ProcessAsync(stream, req.Configs!, cancellationToken);
             stream = processedResponse.Content;
-            fileExtension = GetFileExtension(processedResponse.Name);
+            fileExtension = processedResponse.Extension;
         }
 
         var fileName = $"{id}{fileExtension}";
@@ -61,26 +60,28 @@ internal sealed class PutFileService : IPutFileService
         });
 
         await _fileRepository.AddAsync(file, cancellationToken);
-
         await stream.DisposeAsync();
-
-        var providers = await _providerRepository.FindAsync(cancellationToken);
-        foreach (var provider in providers.Where(provider => provider is
-                 {
-                     Primary: false,
-                     Replication: true,
-                     Status: ProviderStatus.Enable
-                 }))
-        {
-            await _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
-            {
-                FileId = file.Id,
-                Provider = provider.Name
-            }, cancellationToken: cancellationToken);
-        }
+        
+        _ = ReplicateAsync();
 
         return new PutFileResponse(file.Id, IdLink.From(file.Id));
 
-        string GetFileExtension(string name) => Path.HasExtension(name) ? Path.GetExtension(name) : throw new InvalidFileExtensionException();
+        async Task ReplicateAsync()
+        {
+            var providers = await _providerRepository.FindAsync(cancellationToken);
+            foreach (var provider in providers.Where(provider => provider is
+                     {
+                         Primary: false,
+                         Replication: true,
+                         Status: ProviderStatus.Enable
+                     }))
+            {
+                _ = _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
+                {
+                    FileId = file.Id,
+                    Provider = provider.Name
+                }, cancellationToken: cancellationToken);
+            }
+        }
     }
 }

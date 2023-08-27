@@ -11,16 +11,14 @@ internal sealed class ProviderService : IProviderService
 
     public async Task AddAsync(Provider provider, CancellationToken cancellationToken = default)
     {
-        var providers = await _providerRepository.FindAsync();
+        var providers = await _providerRepository.FindAsync(cancellationToken);
 
-        if (providers.Count > 0 && providers.GroupBy(storage => storage.Name).Count() > 1)
+        switch (providers.Count)
         {
-            throw new ArgumentException("Duplicate storage name");
-        }
-
-        if (providers.Count > 1 && providers.All(storage => !storage.Primary))
-        {
-            throw new ArgumentException("You must set primary storage");
+            case > 0 when providers.GroupBy(storage => storage.Name).Count() > 1:
+                throw new ArgumentException("Duplicate storage name");
+            case > 1 when providers.All(storage => !storage.Primary):
+                throw new ArgumentException("You must set primary storage");
         }
 
         if (providers.Count(storage => storage.Primary) > 1)
@@ -40,7 +38,7 @@ internal sealed class ProviderService : IProviderService
         await _providerRepository.AddAsync(provider, cancellationToken);
     }
 
-    public  Task UpdateAsync(string providerName, Provider provider, CancellationToken cancellationToken = default)
+    public Task UpdateAsync(string providerName, Provider provider, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
         // await _providerRepository.UpdateAsync(provider, cancellationToken);

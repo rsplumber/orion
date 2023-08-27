@@ -1,3 +1,4 @@
+using Core.Providers.Events;
 using DotNetCore.CAP;
 
 namespace Core;
@@ -11,7 +12,12 @@ public sealed class EventsRetriesFailedHandler
         _capPublisher = capPublisher;
     }
 
-    public async Task HandleAsync(Guid identificationStatusId, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(Guid fileId, string providerName, CancellationToken cancellationToken = default)
     {
+        await _capPublisher.PublishAsync(ReplicateFileFailedEvent.EventName, new ReplicateFileFailedEvent
+        {
+            FileId = fileId,
+            Provider = providerName
+        }, cancellationToken: cancellationToken);
     }
 }

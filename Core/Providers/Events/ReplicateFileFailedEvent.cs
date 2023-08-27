@@ -6,7 +6,9 @@ public sealed record ReplicateFileFailedEvent
 {
     public const string EventName = "orion.replication.failed";
 
-    public Guid Id { get; init; }
+    public Guid FileId { get; init; }
+
+    public string Provider { get; init; } = default!;
 }
 
 internal sealed class ReplicateFileFailedEventHandler : ICapSubscribe
@@ -22,7 +24,7 @@ internal sealed class ReplicateFileFailedEventHandler : ICapSubscribe
     [CapSubscribe(ReplicateFileFailedEvent.EventName, Group = "orion.files.replications.queue")]
     public async Task HandleAsync(ReplicateFileFailedEvent message, CancellationToken cancellationToken = default)
     {
-        var replication = await _replicationRepository.FindAsync(message.Id, cancellationToken);
+        var replication = await _replicationRepository.FindAsync(message.FileId, cancellationToken);
         if (replication is null)
         {
             return;

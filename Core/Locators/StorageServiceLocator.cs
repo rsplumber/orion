@@ -15,17 +15,17 @@ public class StorageServiceLocator : IStorageServiceLocator
         _providerRepository = providerRepository;
     }
 
-    public async Task<IStorageService> LocatePrimaryAsync(CancellationToken cancellationToken = default)
+    public async Task<IStorageService?> LocatePrimaryAsync(CancellationToken cancellationToken = default)
     {
         var providers = await _providerRepository.FindAsync(cancellationToken);
         var primaryProvider = providers.First(provider => provider is { Primary: true, Status: ProviderStatus.Enable });
-        return _storageServices.First(service => service.Name == primaryProvider.Name);
+        return _storageServices.FirstOrDefault(service => service.Name == primaryProvider.Name);
     }
 
-    public async Task<IStorageService> LocateAsync(string providerName, CancellationToken cancellationToken = default)
+    public async Task<IStorageService?> LocateAsync(string providerName, CancellationToken cancellationToken = default)
     {
         var providers = await _providerRepository.FindAsync(cancellationToken);
         var selectedProvider = providers.First(provider => provider.Name == providerName && provider.Status == ProviderStatus.Enable);
-        return _storageServices.First(service => service.Name == selectedProvider.Name);
+        return _storageServices.FirstOrDefault(service => service.Name == selectedProvider.Name);
     }
 }
