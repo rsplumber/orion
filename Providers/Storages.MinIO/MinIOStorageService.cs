@@ -1,14 +1,15 @@
 using Minio;
+using Minio.DataModel.Args;
 using Storages.Abstractions;
 
 namespace Storages.MinIO;
 
 internal sealed class MinIOStorageService : IStorageService
 {
-    private readonly MinioClient _client;
+    private readonly IMinioClient _client;
     private const int LinkExpireTimeInSeconds = 518400;
 
-    public MinIOStorageService(MinioClient client)
+    public MinIOStorageService(IMinioClient client)
     {
         _client = client;
     }
@@ -18,34 +19,32 @@ internal sealed class MinIOStorageService : IStorageService
     public async Task<FileLink> PutAsync(Stream stream, string path, string name)
     {
         var (bucketName, filePath) = ExtractPathData(path);
-        var objectName = $"{filePath}/{name}";
-        if (!await FileExitsAsync())
+        if (!await _client.BucketExistsAsync(new BucketExistsArgs()
+                    .WithBucket(bucketName))
+                .ConfigureAwait(false))
         {
-            await _client.MakeBucketAsync(new MakeBucketArgs()
-                .WithBucket(bucketName));
+            await _client.MakeBucketAsync(new MakeBucketArgs().WithBucket(bucketName)).ConfigureAwait(false);
         }
 
+        var objectName = $"{filePath}/{name}";
         await _client.PutObjectAsync(new PutObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithStreamData(stream)
-            .WithObjectSize(stream.Length));
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithStreamData(stream)
+                .WithObjectSize(stream.Length))
+            .ConfigureAwait(false);
 
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithExpiry(LinkExpireTimeInSeconds));
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithExpiry(LinkExpireTimeInSeconds))
+            .ConfigureAwait(false);
 
         return new FileLink
         {
             Url = url,
             ExpireDateTimeUtc = DateTime.UtcNow.AddSeconds(LinkExpireTimeInSeconds)
         };
-
-        async Task<bool> FileExitsAsync()
-        {
-            return await _client.BucketExistsAsync(new BucketExistsArgs().WithBucket(bucketName));
-        }
     }
 
 
@@ -62,9 +61,10 @@ internal sealed class MinIOStorageService : IStorageService
         var (bucketName, filePath) = ExtractPathData(path);
         var objectName = $"{filePath}/{name}";
         var url = await _client.PresignedGetObjectAsync(new PresignedGetObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName)
-            .WithExpiry(LinkExpireTimeInSeconds));
+                .WithBucket(bucketName)
+                .WithObject(objectName)
+                .WithExpiry(LinkExpireTimeInSeconds))
+            .ConfigureAwait(false);
 
         return new FileLink
         {
@@ -78,8 +78,9 @@ internal sealed class MinIOStorageService : IStorageService
         var (bucketName, filePath) = ExtractPathData(path);
         var objectName = $"{filePath}/{name}";
         await _client.RemoveObjectAsync(new RemoveObjectArgs()
-            .WithBucket(bucketName)
-            .WithObject(objectName));
+                .WithBucket(bucketName)
+                .WithObject(objectName))
+            .ConfigureAwait(false);
     }
 
 

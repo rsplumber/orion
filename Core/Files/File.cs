@@ -8,7 +8,7 @@ public sealed class File
 
     public string Path { get; set; } = default!;
 
-    public Guid OwnerId { get; set; }
+    public Bucket Bucket { get; set; } = default!;
 
     public Dictionary<string, string> Metas { get; set; } = new();
 

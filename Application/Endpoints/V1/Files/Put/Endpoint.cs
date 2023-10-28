@@ -1,26 +1,23 @@
 using Core.Files;
 using FastEndpoints;
 using FluentValidation;
-using KunderaNet.Authorization;
 
 namespace Application.Endpoints.V1.Files.Put;
 
 file sealed class Endpoint : Endpoint<Request, PutFileResponse>
 {
     private readonly IPutFileService _putFileService;
-    private readonly ICurrentUserService _currentUserService;
 
 
-    public Endpoint(IPutFileService putFileService, ICurrentUserService currentUserService)
+    public Endpoint(IPutFileService putFileService)
     {
         _putFileService = putFileService;
-        _currentUserService = currentUserService;
     }
 
     public override void Configure()
     {
         Put("files");
-        Permissions("files_put");
+        AllowAnonymous();
         AllowFileUploads();
         Version(1);
     }
@@ -29,15 +26,16 @@ file sealed class Endpoint : Endpoint<Request, PutFileResponse>
     {
         if (Files.Count == 0)
         {
+            AddError("File cannot be null or empty");
             await SendErrorsAsync(cancellation: ct);
             return;
         }
 
         var response = await _putFileService.PutAsync(request.File.OpenReadStream(), new PutFileRequest
         {
+            BucketId = request.BucketId,
             Name = request.File.FileName,
             Path = request.FilePath,
-            OwnerId = _currentUserService.User().Id,
             Configs = request.Configs
         }, ct);
         await SendOkAsync(response, ct);
@@ -65,6 +63,10 @@ file sealed class RequestValidator : Validator<Request>
         RuleFor(request => request.FilePath)
             .NotEmpty().WithMessage("Add FilePath")
             .NotNull().WithMessage("Add FilePath");
+
+        RuleFor(request => request.BucketId)
+            .NotEmpty().WithMessage("Enter valid BucketId")
+            .NotNull().WithMessage("Enter BucketId");
     }
 }
 
@@ -74,6 +76,8 @@ file sealed record Request
     /// e.g: data\files\images or data/files/images
     /// </summary>
     public string FilePath { get; set; } = default!;
+
+    public Guid BucketId { get; set; } = default!;
 
     public IFormFile File { get; set; } = default!;
 

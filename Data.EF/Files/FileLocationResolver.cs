@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data.EF.Files;
 
-public sealed class FileLocationResolver : IFileLocationResolver
+internal sealed class FileLocationResolver : IFileLocationResolver
 {
     private readonly OrionDbContext _dbContext;
 

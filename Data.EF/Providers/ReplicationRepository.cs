@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Data.EF.Providers;
 
-public class ReplicationRepository : IReplicationRepository
+internal sealed class ReplicationRepository : IReplicationRepository
 {
     private readonly OrionDbContext _dbContext;
 

@@ -1,4 +1,5 @@
 ﻿using Core.Files.Events;
+using Core.Providers.Exceptions;
 using DotNetCore.CAP;
 
 namespace Core.Files.Services;
@@ -32,6 +33,7 @@ internal sealed class FileLocationService : IFileLocationService
         var file = await _fileRepository.FindAsync(IdLink.Parse(link), cancellationToken);
         if (file is null) return null;
         var storageService = await _storageServiceLocator.LocateAsync(selectedLocation.Provider, cancellationToken);
+        if (storageService is null) throw new ProviderNotFoundException();
         var refreshedLink = await storageService.RefreshLinkAsync(file.Path, file.Name);
         var needToUpdateLocation = file.Locations.First(location => location.Link == selectedLocation.Link);
         needToUpdateLocation.Link = refreshedLink.Url;

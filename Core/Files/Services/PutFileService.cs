@@ -1,5 +1,7 @@
+using Core.Files.Exceptions;
 using Core.Providers;
 using Core.Providers.Events;
+using Core.Providers.Exceptions;
 using Core.Providers.Types;
 using DotNetCore.CAP;
 using FileProcessor.Abstractions;
@@ -8,25 +10,29 @@ namespace Core.Files.Services;
 
 internal sealed class PutFileService : IPutFileService
 {
+    private readonly IBucketRepository _bucketRepository;
     private readonly IFileRepository _fileRepository;
     private readonly IProviderRepository _providerRepository;
     private readonly IStorageServiceLocator _storageServiceLocator;
     private readonly IFileProcessorServiceLocator _fileProcessorServiceLocator;
     private readonly ICapPublisher _capPublisher;
 
-    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator, IFileProcessorServiceLocator fileProcessorServiceLocator)
+    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator, IFileProcessorServiceLocator fileProcessorServiceLocator, IBucketRepository bucketRepository)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
         _capPublisher = capPublisher;
         _storageServiceLocator = storageServiceLocator;
         _fileProcessorServiceLocator = fileProcessorServiceLocator;
+        _bucketRepository = bucketRepository;
     }
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default)
     {
+        var bucket = await _bucketRepository.FindAsync(req.BucketId, cancellationToken);
+        if (bucket is null) throw new BucketNotFoundException();
         var id = Guid.NewGuid();
-        var filePath = $"{req.OwnerId}/{req.Path}";
+        var filePath = $"{bucket.Name}/{req.Path}";
         var fileExtension = req.Extension;
 
         if (req.HasConfig())
@@ -39,13 +45,14 @@ internal sealed class PutFileService : IPutFileService
 
         var fileName = $"{id}{fileExtension}";
         var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
+        if (storageService is null) throw new ProviderNotFoundException();
         var link = await storageService.PutAsync(stream, filePath, fileName);
         var file = new File
         {
             Id = id,
             Name = fileName,
             Path = filePath,
-            OwnerId = req.OwnerId,
+            Bucket = bucket,
             Metas = new Dictionary<string, string>
             {
                 { "Extension", fileExtension }
@@ -61,7 +68,7 @@ internal sealed class PutFileService : IPutFileService
 
         await _fileRepository.AddAsync(file, cancellationToken);
         await stream.DisposeAsync();
-        
+
         _ = ReplicateAsync();
 
         return new PutFileResponse(file.Id, IdLink.From(file.Id));

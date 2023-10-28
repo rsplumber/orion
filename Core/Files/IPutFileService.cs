@@ -9,11 +9,11 @@ public interface IPutFileService
 
 public sealed record PutFileRequest
 {
+    public required Guid BucketId { get; init; } = default!;
+    
     public required string Name { get; init; } = default!;
 
     public required string Path { get; init; } = default!;
-
-    public required Guid OwnerId { get; init; }
 
     public Dictionary<string, string>? Configs { get; init; } = new();
 

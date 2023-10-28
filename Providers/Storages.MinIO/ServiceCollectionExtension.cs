@@ -8,11 +8,12 @@ namespace Storages.MinIO;
 
 public static class ServiceCollectionExtension
 {
-    public static void AddMinio(this IServiceCollection services, IConfiguration? configuration = default)
+    public static void AddMinioStorage(this IServiceCollection services, IConfiguration? configuration = default)
     {
-        services.TryAddScoped<MinioClient>(provider => new MinioClient()
+        services.AddSingleton<IMinioClient>(_ => new MinioClient()
             .WithEndpoint("10.121.254.62:9100")
             .WithCredentials("oSeAMoNsIVEndENtLESa", "AURnMAyMUckbaFtHEreveRanTECTiM")
+            .WithSSL(false)
             .Build());
         services.TryAddScoped<IStorageService, MinIOStorageService>();
     }

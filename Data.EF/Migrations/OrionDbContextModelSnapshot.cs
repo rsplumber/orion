@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using Core.Files;
 using Data.EF;
-using Data.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -11,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace Data.Sql.Migrations
+namespace Data.EF.Migrations
 {
     [DbContext(typeof(OrionDbContext))]
     partial class OrionDbContextModelSnapshot : ModelSnapshot
@@ -20,10 +19,34 @@ namespace Data.Sql.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.7")
+                .HasAnnotation("ProductVersion", "7.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Core.Files.Bucket", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("CreatedDateUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_date_utc");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("buckets", (string)null);
+                });
 
             modelBuilder.Entity("Core.Files.File", b =>
                 {
@@ -51,18 +74,17 @@ namespace Data.Sql.Migrations
                         .HasColumnType("text")
                         .HasColumnName("name");
 
-                    b.Property<Guid>("OwnerId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("owner_id");
-
                     b.Property<string>("Path")
                         .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("path");
 
+                    b.Property<Guid>("bucket_id")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Name");
+                    b.HasIndex("bucket_id");
 
                     b.ToTable("files", (string)null);
                 });
@@ -127,9 +149,26 @@ namespace Data.Sql.Migrations
 
                     b.HasIndex("FileId");
 
-                    b.HasIndex("Provider");
+                    b.HasIndex("Provider")
+                        .IsUnique();
 
                     b.ToTable("replications", (string)null);
+                });
+
+            modelBuilder.Entity("Core.Files.File", b =>
+                {
+                    b.HasOne("Core.Files.Bucket", "Bucket")
+                        .WithMany("Files")
+                        .HasForeignKey("bucket_id")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Bucket");
+                });
+
+            modelBuilder.Entity("Core.Files.Bucket", b =>
+                {
+                    b.Navigation("Files");
                 });
 #pragma warning restore 612, 618
         }

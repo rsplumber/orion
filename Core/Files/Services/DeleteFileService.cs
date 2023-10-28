@@ -1,5 +1,6 @@
 using Core.Providers;
 using Core.Providers.Events;
+using Core.Providers.Exceptions;
 using DotNetCore.CAP;
 
 namespace Core.Files.Services;
@@ -23,12 +24,10 @@ internal sealed class DeleteFileService : IDeleteFileService
     {
         var fileId = IdLink.Parse(link);
         var file = await _fileRepository.FindAsync(fileId, cancellationToken);
-        if (file is null)
-        {
-            throw new FileNotFoundException();
-        }
+        if (file is null) throw new FileNotFoundException();
 
         var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
+        if (storageService is null) throw new ProviderNotFoundException();
         await storageService.DeleteAsync(file.Path, file.Name);
         file.Locations.Remove(file.Locations.First(location => location.Provider == storageService.Name));
         if (file.Locations.Count == 0)
@@ -42,14 +41,11 @@ internal sealed class DeleteFileService : IDeleteFileService
 
         foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
         {
-            await Task.Run(() =>
+            await _capPublisher.PublishAsync($"{DeleteFileEvent.EventName}.{provider.Name}", new DeleteFileEvent
             {
-                _capPublisher.PublishAsync($"{DeleteFileEvent.EventName}.{provider.Name}", new DeleteFileEvent
-                {
-                    FileId = file.Id,
-                    Provider = provider.Name
-                }, cancellationToken: cancellationToken);
-            }, cancellationToken);
+                FileId = file.Id,
+                Provider = provider.Name
+            }, cancellationToken: cancellationToken);
         }
     }
 }

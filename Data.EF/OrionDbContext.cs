@@ -1,4 +1,5 @@
-﻿using Core.Providers;
+﻿using Core.Files;
+using Core.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using File = Core.Files.File;
@@ -12,6 +13,8 @@ public class OrionDbContext : DbContext
     }
 
 
+    public DbSet<Bucket> Buckets { get; set; }
+
     public DbSet<File> Files { get; set; }
 
     public DbSet<Replication> Replications { get; set; }
@@ -20,6 +23,7 @@ public class OrionDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        builder.ApplyConfiguration(new BucketEntityTypeConfiguration());
         builder.ApplyConfiguration(new FileEntityTypeConfiguration());
         builder.ApplyConfiguration(new ReplicationEntityTypeConfiguration());
         builder.ApplyConfiguration(new ProviderEntityTypeConfiguration());
@@ -30,6 +34,34 @@ public class OrionDbContext : DbContext
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = new())
     {
         return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    private class BucketEntityTypeConfiguration : IEntityTypeConfiguration<Bucket>
+    {
+        public void Configure(EntityTypeBuilder<Bucket> builder)
+        {
+            builder.ToTable("buckets")
+                .HasKey(bucket => bucket.Id);
+
+            builder.Property(bucket => bucket.Id)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("id");
+
+            builder.Property(bucket => bucket.Name)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("name");
+
+            builder.HasIndex(bucket => bucket.Name).IsUnique();
+
+            builder.HasMany(bucket => bucket.Files)
+                .WithOne(file => file.Bucket)
+                .HasForeignKey("bucket_id")
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Property(bucket => bucket.CreatedDateUtc)
+                .UsePropertyAccessMode(PropertyAccessMode.Property)
+                .HasColumnName("created_date_utc");
+        }
     }
 
     private class FileEntityTypeConfiguration : IEntityTypeConfiguration<File>
@@ -46,16 +78,10 @@ public class OrionDbContext : DbContext
             builder.Property(file => file.Name)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("name");
-            
+
             builder.Property(file => file.Path)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("path");
-
-            builder.Property(file => file.OwnerId)
-                .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("owner_id");
-
-            builder.HasIndex(file => file.Name);
 
             builder.Property(file => file.Metas)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
@@ -94,7 +120,7 @@ public class OrionDbContext : DbContext
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
                 .HasColumnName("provider");
 
-            builder.HasIndex(replication => replication.Provider);
+            builder.HasIndex(replication => replication.Provider).IsUnique();
 
             builder.Property(replication => replication.Status)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)

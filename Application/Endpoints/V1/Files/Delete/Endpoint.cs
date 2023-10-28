@@ -16,7 +16,7 @@ file sealed class Endpoint : Endpoint<Request>
     public override void Configure()
     {
         Delete("files/{Link}");
-        Permissions("files_delete");
+        AllowAnonymous();
         Version(1);
     }
 

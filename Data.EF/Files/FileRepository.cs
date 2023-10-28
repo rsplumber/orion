@@ -4,7 +4,7 @@ using File = Core.Files.File;
 
 namespace Data.EF.Files;
 
-public class FileRepository : IFileRepository
+internal sealed class FileRepository : IFileRepository
 {
     private readonly OrionDbContext _dbContext;
 

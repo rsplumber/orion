@@ -17,6 +17,7 @@ public static class DataOptionsExtension
         dataOptions.Services.AddScoped<IFileRepository, FileRepository>();
         dataOptions.Services.AddScoped<IReplicationRepository, ReplicationRepository>();
         dataOptions.Services.AddScoped<IFileLocationResolver, FileLocationResolver>();
+        dataOptions.Services.AddScoped<IBucketRepository, BucketRepository>();
 
         dataOptions.Services.AddScoped<IProviderRepository, ProviderRepository>();
         dataOptions.Services.AddScoped<IProviderQuery, ProviderQuery>();

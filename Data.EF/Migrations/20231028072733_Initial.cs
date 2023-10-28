@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Data.Sql.Migrations
+namespace Data.EF.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration
@@ -14,20 +14,16 @@ namespace Data.Sql.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "files",
+                name: "buckets",
                 columns: table => new
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "text", nullable: false),
-                    path = table.Column<string>(type: "text", nullable: false),
-                    owner_id = table.Column<Guid>(type: "uuid", nullable: false),
-                    metas = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
-                    locations = table.Column<List<FileLocation>>(type: "jsonb", nullable: false),
                     created_date_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_files", x => x.id);
+                    table.PrimaryKey("PK_buckets", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -61,10 +57,39 @@ namespace Data.Sql.Migrations
                     table.PrimaryKey("PK_replications", x => x.id);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "files",
+                columns: table => new
+                {
+                    id = table.Column<Guid>(type: "uuid", nullable: false),
+                    name = table.Column<string>(type: "text", nullable: false),
+                    path = table.Column<string>(type: "text", nullable: false),
+                    bucket_id = table.Column<Guid>(type: "uuid", nullable: false),
+                    metas = table.Column<Dictionary<string, string>>(type: "jsonb", nullable: false),
+                    locations = table.Column<List<FileLocation>>(type: "jsonb", nullable: false),
+                    created_date_utc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_files", x => x.id);
+                    table.ForeignKey(
+                        name: "FK_files_buckets_bucket_id",
+                        column: x => x.bucket_id,
+                        principalTable: "buckets",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
-                name: "IX_files_name",
+                name: "IX_buckets_name",
+                table: "buckets",
+                column: "name",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_files_bucket_id",
                 table: "files",
-                column: "name");
+                column: "bucket_id");
 
             migrationBuilder.CreateIndex(
                 name: "IX_replications_file_id",
@@ -74,7 +99,8 @@ namespace Data.Sql.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_replications_provider",
                 table: "replications",
-                column: "provider");
+                column: "provider",
+                unique: true);
         }
 
         /// <inheritdoc />
@@ -88,6 +114,9 @@ namespace Data.Sql.Migrations
 
             migrationBuilder.DropTable(
                 name: "replications");
+
+            migrationBuilder.DropTable(
+                name: "buckets");
         }
     }
 }

@@ -85,7 +85,7 @@ builder.Services.AddCap(options =>
 
 
 builder.Services.AddCore(builder.Configuration);
-builder.Services.AddMinio();
+builder.Services.AddMinioStorage();
 builder.Services.AddImageProcessors();
 builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 builder.Services.AddData(options =>
@@ -118,11 +118,11 @@ app.UseFastEndpoints(config =>
     config.Versioning.PrependToRoute = true;
 });
 
-if (app.Environment.IsDevelopment())
-{
+// if (app.Environment.IsDevelopment())
+// {
     app.UseOpenApi();
     app.UseSwaggerUi3(s => s.ConfigureDefaults());
-}
+// }
 
 
 await app.RunAsync();
