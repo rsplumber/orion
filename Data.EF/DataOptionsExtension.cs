@@ -13,7 +13,7 @@ public static class DataOptionsExtension
 {
     public static void UseEntityFramework(this DataOptions dataOptions, Action<DbContextOptionsBuilder> optionsAction)
     {
-        dataOptions.Services.AddDbContext<OrionDbContext>(optionsAction);
+        dataOptions.Services.AddDbContextPool<OrionDbContext>(optionsAction, poolSize: 200);
         dataOptions.Services.AddScoped<IFileRepository, FileRepository>();
         dataOptions.Services.AddScoped<IReplicationRepository, ReplicationRepository>();
         dataOptions.Services.AddScoped<IFileLocationResolver, FileLocationResolver>();
