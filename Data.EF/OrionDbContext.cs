@@ -1,4 +1,5 @@
-﻿using Core.Files;
+﻿using System.Text.Json;
+using Core.Files;
 using Core.Providers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -8,6 +9,11 @@ namespace Data.EF;
 
 public class OrionDbContext : DbContext
 {
+    private static readonly JsonSerializerOptions JsonSerializerOptions = new()
+    {
+        IgnoreReadOnlyFields = true
+    };
+
     public OrionDbContext(DbContextOptions<OrionDbContext> options) : base(options)
     {
     }
@@ -85,8 +91,10 @@ public class OrionDbContext : DbContext
 
             builder.Property(file => file.Metas)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("metas")
-                .HasColumnType("jsonb");
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonSerializerOptions),
+                    v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, JsonSerializerOptions)!)
+                .HasColumnName("metas");
 
             builder.Property(file => file.CreatedDateUtc)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
@@ -94,8 +102,10 @@ public class OrionDbContext : DbContext
 
             builder.Property(e => e.Locations)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("locations")
-                .HasColumnType("jsonb");
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonSerializerOptions),
+                    v => JsonSerializer.Deserialize<List<FileLocation>>(v, JsonSerializerOptions)!)
+                .HasColumnName("locations");
         }
     }
 
@@ -158,8 +168,10 @@ public class OrionDbContext : DbContext
 
             builder.Property(provider => provider.Metas)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
-                .HasColumnName("metas")
-                .HasColumnType("jsonb");
+                .HasConversion(
+                    v => JsonSerializer.Serialize(v, JsonSerializerOptions),
+                    v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, JsonSerializerOptions)!)
+                .HasColumnName("metas");
 
             builder.Property(provider => provider.CreatedDateUtc)
                 .UsePropertyAccessMode(PropertyAccessMode.Property)
