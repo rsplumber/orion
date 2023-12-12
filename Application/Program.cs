@@ -90,7 +90,6 @@ app.UseCors(b => b.AllowAnyHeader()
     .AllowCredentials());
 
 app.UseHealthChecks("/health");
-app.UseMiddleware<CustomExceptionHandler>();
 app.Services.UseData(options =>
 {
     options.UseEntityFramework();
