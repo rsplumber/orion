@@ -29,7 +29,6 @@ internal sealed class FileLocationService : IFileLocationService
         var selectedLocation = await _locationSelector.SelectAsync(fileLocations, cancellationToken);
         if (selectedLocation is null) return null;
         if (selectedLocation.ExpireDateUtc is not null && selectedLocation.ExpireDateUtc >= DateTime.UtcNow) return selectedLocation.Link;
-
         var file = await _fileRepository.FindAsync(IdLink.Parse(link), cancellationToken);
         if (file is null) return null;
         var storageService = await _storageServiceLocator.LocateAsync(selectedLocation.Provider, cancellationToken);
@@ -46,4 +45,6 @@ internal sealed class FileLocationService : IFileLocationService
         }, cancellationToken: cancellationToken);
         return refreshedLink.Url;
     }
+    
+    
 }

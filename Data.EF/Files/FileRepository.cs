@@ -33,6 +33,8 @@ internal sealed class FileRepository : IFileRepository
 
     public Task<File?> FindAsync(Guid id, CancellationToken cancellationToken = default)
     {
-        return _dbContext.Files.FirstOrDefaultAsync(f => f.Id == id, cancellationToken: cancellationToken);
+        return _dbContext.Files
+            .Include(f => f.Bucket)
+            .FirstOrDefaultAsync(f => f.Id == id, cancellationToken: cancellationToken);
     }
 }
