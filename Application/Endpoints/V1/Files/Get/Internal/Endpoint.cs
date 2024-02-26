@@ -33,20 +33,6 @@ file sealed class Endpoint : Endpoint<Request>
 
     public override async Task HandleAsync(Request req, CancellationToken ct)
     {
-        var fileLocations = await _fileLocationResolver.ResolveAsync(req.Link, ct);
-        if (fileLocations.Count == 0)
-        {
-            await SendNotFoundAsync(ct);
-            return;
-        }
-
-        var selectedLocation = await _locationSelector.SelectAsync(fileLocations, ct);
-        if (selectedLocation is null)
-        {
-            await SendNotFoundAsync(ct);
-            return;
-        }
-
         var file = await _fileRepository.FindAsync(IdLink.Parse(req.Link), ct);
         if (file is null)
         {

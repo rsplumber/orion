@@ -11,13 +11,13 @@ public static class ServiceCollectionExtension
     public static void AddMinioStorage(this IServiceCollection services, IConfiguration? configuration = default)
     {
         services.AddSingleton<IMinioClient>(_ => new MinioClient()
-            .WithEndpoint("digibanking.sbank.ir:9100")
+            .WithEndpoint("app.sbank.ir")
             .WithCredentials("oSeAMoNsIVEndENtLESa", "AURnMAyMUckbaFtHEreveRanTECTiM")
-            .WithSSL(false)
+            .WithSSL()
             .Build());
 
         services.AddSingleton<CustomMinIoClient>(_ => (CustomMinIoClient) new CustomMinIoClient()
-            .WithEndpoint("172.17.0.22:9000")
+            .WithEndpoint("10.255.255.76:9100")
             .WithCredentials("oSeAMoNsIVEndENtLESa", "AURnMAyMUckbaFtHEreveRanTECTiM")
             .WithSSL(false)
             .Build());

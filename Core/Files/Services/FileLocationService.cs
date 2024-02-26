@@ -28,23 +28,29 @@ internal sealed class FileLocationService : IFileLocationService
 
         var selectedLocation = await _locationSelector.SelectAsync(fileLocations, cancellationToken);
         if (selectedLocation is null) return null;
-        if (selectedLocation.ExpireDateUtc is not null && selectedLocation.ExpireDateUtc >= DateTime.UtcNow) return selectedLocation.Link;
+        if (IsValidCachedLink()) return selectedLocation.Link;
         var file = await _fileRepository.FindAsync(IdLink.Parse(link), cancellationToken);
         if (file is null) return null;
         var storageService = await _storageServiceLocator.LocateAsync(selectedLocation.Provider, cancellationToken);
         if (storageService is null) throw new ProviderNotFoundException();
         var refreshedLink = await storageService.RefreshLinkAsync(file.Path, file.Name);
-        var needToUpdateLocation = file.Locations.First(location => location.Link == selectedLocation.Link);
-        needToUpdateLocation.Link = refreshedLink.Url;
-        needToUpdateLocation.ExpireDateUtc = refreshedLink.ExpireDateTimeUtc;
+        file.Locations.Clear();
+        file.Locations.Add(new FileLocation
+        {
+            Provider = selectedLocation.Provider,
+            Link = refreshedLink.Url,
+            ExpireDateUtc = refreshedLink.ExpireDateTimeUtc
+        });
         await _fileRepository.UpdateAsync(file, cancellationToken);
         await _capPublisher.PublishAsync(FileLocationRefreshedEvent.EventName, new FileLocationRefreshedEvent
         {
-            Provider = needToUpdateLocation.Provider,
+            Provider = file.Locations.First().Provider,
             Id = file.Id
         }, cancellationToken: cancellationToken);
         return refreshedLink.Url;
+
+        bool IsValidCachedLink() => selectedLocation.ExpireDateUtc is not null &&
+                                    selectedLocation.ExpireDateUtc >= DateTime.UtcNow &&
+                                    selectedLocation.Link.StartsWith("https://app.sbank.ir");
     }
-    
-    
 }
