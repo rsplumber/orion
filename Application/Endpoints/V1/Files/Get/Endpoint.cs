@@ -17,7 +17,6 @@ file sealed class Endpoint : Endpoint<Request>
     {
         Get("files/{link}");
         AllowAnonymous();
-        ResponseCache(120);
         Version(1);
     }
 

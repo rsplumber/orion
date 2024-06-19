@@ -10,6 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Savorboard.CAP.InMemoryMessageQueue" Version="8.0.0"/>
+        <PackageReference Include="DotNetCore.CAP.InMemoryStorage" Version="8.0.0"/>
         <PackageReference Include="DotNetCore.CAP.PostgreSql" Version="7.2.2" />
         <PackageReference Include="DotNetCore.CAP.RabbitMQ" Version="7.2.2" />
         <PackageReference Include="Elastic.Apm.NetCoreAll" Version="1.25.1" />

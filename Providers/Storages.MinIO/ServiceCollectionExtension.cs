@@ -17,7 +17,7 @@ public static class ServiceCollectionExtension
             .Build());
 
         services.AddSingleton<CustomMinIoClient>(_ => (CustomMinIoClient) new CustomMinIoClient()
-            .WithEndpoint("10.255.255.76:9100")
+            .WithEndpoint("192.168.67.17:9100")
             .WithCredentials("oSeAMoNsIVEndENtLESa", "AURnMAyMUckbaFtHEreveRanTECTiM")
             .WithSSL(false)
             .Build());

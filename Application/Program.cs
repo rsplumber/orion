@@ -13,6 +13,7 @@ using FileProcessor.Images.SixLabors;
 using KunderaNet.FastEndpoints.Authorization;
 using KunderaNet.Services.Authorization.Http;
 using Microsoft.EntityFrameworkCore;
+using Savorboard.CAP.InMemoryMessageQueue;
 using Storages.MinIO;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,7 +34,6 @@ builder.Services.AddAuthentication(KunderaDefaults.Scheme)
     .AddKundera(builder.Configuration, k => k.UseHttpService(builder.Configuration));
 builder.Services.AddAuthorization();
 builder.Services.AddExceptionHandler<CustomExceptionHandler>();
-builder.Services.AddResponseCaching();
 builder.Services.AddFastEndpoints();
 
 builder.Services.SwaggerDocument(settings =>
@@ -52,23 +52,25 @@ builder.Services.SwaggerDocument(settings =>
 
 builder.Services.AddCap(options =>
 {
-    options.FailedRetryCount = 1;
+    options.FailedRetryCount = 0;
     options.FailedRetryInterval = 60 * 2;
     options.FailedMessageExpiredAfter = 60 * 60 * 3;
     options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     options.JsonSerializerOptions.IgnoreReadOnlyFields = true;
-    options.UseRabbitMQ(op =>
-    {
-        op.HostName = builder.Configuration.GetValue<string>("RabbitMQ:HostName") ?? throw new ArgumentNullException("RabbitMQ:HostName", "Enter RabbitMQ:HostName in app settings");
-        op.UserName = builder.Configuration.GetValue<string>("RabbitMQ:UserName") ?? throw new ArgumentNullException("RabbitMQ:UserName", "Enter RabbitMQ:UserName in app settings");
-        op.Password = builder.Configuration.GetValue<string>("RabbitMQ:Password") ?? throw new ArgumentNullException("RabbitMQ:Password", "Enter RabbitMQ:UserName in app settings");
-        op.ExchangeName = builder.Configuration.GetValue<string>("RabbitMQ:ExchangeName") ?? throw new ArgumentNullException("RabbitMQ:ExchangeName", "Enter RabbitMQ:ExchangeName in app settings");
-    });
-    options.UsePostgreSql(sqlOptions =>
-    {
-        sqlOptions.ConnectionString = builder.Configuration.GetConnectionString("default") ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings");
-        sqlOptions.Schema = "events";
-    });
+    options.UseInMemoryStorage();
+    options.UseInMemoryMessageQueue();
+    // options.UseRabbitMQ(op =>
+    // {
+    //     op.HostName = builder.Configuration.GetValue<string>("RabbitMQ:HostName") ?? throw new ArgumentNullException("RabbitMQ:HostName", "Enter RabbitMQ:HostName in app settings");
+    //     op.UserName = builder.Configuration.GetValue<string>("RabbitMQ:UserName") ?? throw new ArgumentNullException("RabbitMQ:UserName", "Enter RabbitMQ:UserName in app settings");
+    //     op.Password = builder.Configuration.GetValue<string>("RabbitMQ:Password") ?? throw new ArgumentNullException("RabbitMQ:Password", "Enter RabbitMQ:UserName in app settings");
+    //     op.ExchangeName = builder.Configuration.GetValue<string>("RabbitMQ:ExchangeName") ?? throw new ArgumentNullException("RabbitMQ:ExchangeName", "Enter RabbitMQ:ExchangeName in app settings");
+    // });
+    // options.UsePostgreSql(sqlOptions =>
+    // {
+    //     sqlOptions.ConnectionString = builder.Configuration.GetConnectionString("default") ?? throw new ArgumentNullException("connectionString", "Enter connection string in app settings");
+    //     sqlOptions.Schema = "events";
+    // });
 });
 
 
@@ -96,7 +98,6 @@ app.Services.UseData(options =>
     options.UseCaching(executionOptions => executionOptions.UseInMemoryCaching());
 });
 app.UseAllElasticApm(builder.Configuration);
-app.UseResponseCaching();
 app.UseFastEndpoints(config =>
 {
     config.Serializer.Options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
