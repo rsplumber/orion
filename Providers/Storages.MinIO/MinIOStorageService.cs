@@ -7,7 +7,7 @@ namespace Storages.MinIO;
 internal sealed class MinIOStorageService : IStorageService
 {
     private readonly IMinioClient _client;
-    private const int LinkExpireTimeInSeconds = 518400;
+    private const int LinkExpireTimeInSeconds = 60 * 60;
 
     public MinIOStorageService(IMinioClient client)
     {
