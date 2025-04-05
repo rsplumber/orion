@@ -80,9 +80,11 @@ builder.Services.AddImageProcessors();
 builder.Services.AddSixLaborsImageProcessor(builder.Configuration);
 builder.Services.AddData(options =>
 {
-    options.UseEntityFramework(b => b.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+    options.UseEntityFramework(b => b.UseNpgsql(
+        builder.Configuration.GetConnectionString("Default") + ";Pooling=true;MinPoolSize=5;MaxPoolSize=500;CommandTimeout=60"));
     options.AddCaching(cachingOptions => cachingOptions.UseInMemoryCaching());
 });
+
 
 var app = builder.Build();
 app.UseExceptionHandler("/error");
