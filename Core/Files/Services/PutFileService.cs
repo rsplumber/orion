@@ -17,7 +17,13 @@ internal sealed class PutFileService : IPutFileService
     private readonly IFileProcessorServiceLocator _fileProcessorServiceLocator;
     private readonly ICapPublisher _capPublisher;
 
-    public PutFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator, IFileProcessorServiceLocator fileProcessorServiceLocator, IBucketRepository bucketRepository)
+    public PutFileService(
+        IFileRepository fileRepository,
+        IProviderRepository providerRepository,
+        ICapPublisher capPublisher,
+        IStorageServiceLocator storageServiceLocator,
+        IFileProcessorServiceLocator fileProcessorServiceLocator,
+        IBucketRepository bucketRepository)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
@@ -29,31 +35,37 @@ internal sealed class PutFileService : IPutFileService
 
     public async Task<PutFileResponse> PutAsync(Stream stream, PutFileRequest req, CancellationToken cancellationToken = default)
     {
-        var bucket = await _bucketRepository.FindAsync(req.BucketId, cancellationToken);
-        if (bucket is null) throw new BucketNotFoundException();
+        var bucket = await _bucketRepository.FindAsync(req.BucketId, cancellationToken).ConfigureAwait(false);
+        if (bucket is null)
+            throw new BucketNotFoundException();
+
         var id = Guid.NewGuid();
-        var filePath = $"{bucket.Name}/{req.Path}";
+        var filePath = BuildFilePath(bucket.Name, req.Path);
         var fileExtension = req.Extension;
 
         if (req.HasConfig())
         {
-            var processor = await _fileProcessorServiceLocator.LocateAsync(fileExtension, cancellationToken);
-            var processedResponse = await processor.ProcessAsync(stream, req.Configs!, cancellationToken);
-            stream = processedResponse.Content;
-            fileExtension = processedResponse.Extension;
+            var processor = await _fileProcessorServiceLocator.LocateAsync(fileExtension, cancellationToken).ConfigureAwait(false);
+            var processed = await processor.ProcessAsync(stream, req.Configs!, cancellationToken).ConfigureAwait(false);
+            await stream.DisposeAsync().ConfigureAwait(false);
+            stream = processed.Content;
+            fileExtension = processed.Extension;
         }
 
         var fileName = $"{id}{fileExtension}";
-        var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
-        if (storageService is null) throw new ProviderNotFoundException();
-        var link = await storageService.PutAsync(stream, filePath, fileName);
+        var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken).ConfigureAwait(false);
+        if (storageService is null)
+            throw new ProviderNotFoundException();
+
+        using var link = await storageService.PutAsync(stream, filePath, fileName).ConfigureAwait(false);
+
         var file = new File
         {
             Id = id,
             Name = fileName,
             Path = filePath,
             Bucket = bucket,
-            Metas = new Dictionary<string, string>
+            Metas = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { "Extension", fileExtension }
             }
@@ -66,28 +78,35 @@ internal sealed class PutFileService : IPutFileService
             Provider = storageService.Name
         });
 
-        await _fileRepository.AddAsync(file, cancellationToken);
-        await stream.DisposeAsync();
+        await _fileRepository.AddAsync(file, cancellationToken).ConfigureAwait(false);
+        await stream.DisposeAsync().ConfigureAwait(false);
 
-        _ = ReplicateAsync();
+        _ = ReplicateFileAsync(file.Id, cancellationToken);
 
         return new PutFileResponse(file.Id, IdLink.From(file.Id));
+    }
 
-        async Task ReplicateAsync()
+    private static string BuildFilePath(string bucketName, string path) =>
+        string.IsNullOrEmpty(path)
+            ? bucketName
+            : $"{bucketName}/{path}";
+
+    private async Task ReplicateFileAsync(Guid fileId, CancellationToken cancellationToken)
+    {
+        var providers = await _providerRepository.FindAsync(cancellationToken).ConfigureAwait(false);
+
+        foreach (var provider in providers)
         {
-            var providers = await _providerRepository.FindAsync(cancellationToken);
-            foreach (var provider in providers.Where(provider => provider is
-                     {
-                         Primary: false,
-                         Replication: true,
-                         Status: ProviderStatus.Enable
-                     }))
+            if (!provider.Primary && provider.Replication && provider.Status == ProviderStatus.Enable)
             {
-                _ = _capPublisher.PublishAsync($"{ReplicateFileEvent.EventName}.{provider.Name}", new ReplicateFileEvent
-                {
-                    FileId = file.Id,
-                    Provider = provider.Name
-                }, cancellationToken: cancellationToken);
+                _ = _capPublisher.PublishAsync(
+                    $"{ReplicateFileEvent.EventName}.{provider.Name}",
+                    new ReplicateFileEvent
+                    {
+                        FileId = fileId,
+                        Provider = provider.Name
+                    },
+                    cancellationToken: cancellationToken);
             }
         }
     }

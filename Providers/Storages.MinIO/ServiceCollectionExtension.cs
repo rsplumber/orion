@@ -21,6 +21,6 @@ public static class ServiceCollectionExtension
             .WithCredentials("oSeAMoNsIVEndENtLESa", "AURnMAyMUckbaFtHEreveRanTECTiM")
             .WithSSL(false)
             .Build());
-        services.TryAddScoped<IStorageService, MinIOStorageService>();
+        services.TryAddScoped<IStorageService, MinIoStorageService>();
     }
 }

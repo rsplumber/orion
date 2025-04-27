@@ -12,7 +12,11 @@ internal sealed class DeleteFileService : IDeleteFileService
     private readonly IStorageServiceLocator _storageServiceLocator;
     private readonly ICapPublisher _capPublisher;
 
-    public DeleteFileService(IFileRepository fileRepository, IProviderRepository providerRepository, ICapPublisher capPublisher, IStorageServiceLocator storageServiceLocator)
+    public DeleteFileService(
+        IFileRepository fileRepository,
+        IProviderRepository providerRepository,
+        ICapPublisher capPublisher,
+        IStorageServiceLocator storageServiceLocator)
     {
         _fileRepository = fileRepository;
         _providerRepository = providerRepository;
@@ -23,29 +27,52 @@ internal sealed class DeleteFileService : IDeleteFileService
     public async Task DeleteAsync(string link, CancellationToken cancellationToken = default)
     {
         var fileId = IdLink.Parse(link);
-        var file = await _fileRepository.FindAsync(fileId, cancellationToken);
-        if (file is null) throw new FileNotFoundException();
 
-        var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken);
-        if (storageService is null) throw new ProviderNotFoundException();
-        await storageService.DeleteAsync(file.Path, file.Name);
-        file.Locations.Remove(file.Locations.First(location => location.Provider == storageService.Name));
+        var file = await _fileRepository.FindAsync(fileId, cancellationToken).ConfigureAwait(false);
+        if (file is null)
+            throw new FileNotFoundException();
+
+        var storageService = await _storageServiceLocator.LocatePrimaryAsync(cancellationToken).ConfigureAwait(false);
+        if (storageService is null)
+            throw new ProviderNotFoundException();
+
+        await storageService.DeleteAsync(file.Path, file.Name).ConfigureAwait(false);
+
+        RemoveLocation(file.Locations, storageService.Name);
+
         if (file.Locations.Count == 0)
         {
-            await _fileRepository.DeleteAsync(file, cancellationToken);
+            await _fileRepository.DeleteAsync(file, cancellationToken).ConfigureAwait(false);
         }
         else
         {
-            await _fileRepository.UpdateAsync(file, cancellationToken);
+            await _fileRepository.UpdateAsync(file, cancellationToken).ConfigureAwait(false);
         }
 
-        foreach (var provider in await _providerRepository.FindAsync(cancellationToken))
+        var providers = await _providerRepository.FindAsync(cancellationToken).ConfigureAwait(false);
+
+        foreach (var provider in providers)
         {
-            await _capPublisher.PublishAsync($"{DeleteFileEvent.EventName}.{provider.Name}", new DeleteFileEvent
+            _ = _capPublisher.PublishAsync(
+                $"{DeleteFileEvent.EventName}.{provider.Name}",
+                new DeleteFileEvent
+                {
+                    FileId = file.Id,
+                    Provider = provider.Name
+                },
+                cancellationToken: cancellationToken);
+        }
+    }
+
+    private static void RemoveLocation(ICollection<FileLocation> locations, string providerName)
+    {
+        foreach (var location in locations)
+        {
+            if (location.Provider == providerName)
             {
-                FileId = file.Id,
-                Provider = provider.Name
-            }, cancellationToken: cancellationToken);
+                locations.Remove(location);
+                break;
+            }
         }
     }
 }

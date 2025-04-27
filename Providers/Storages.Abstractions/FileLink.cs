@@ -1,8 +1,21 @@
 namespace Storages.Abstractions;
 
-public sealed record FileLink
+public sealed class FileLink : IDisposable
 {
-    public required string Url { get; init; } = default!;
+    private int _index = -1;
 
-    public DateTime? ExpireDateTimeUtc { get; init; }
+    internal void SetIndex(int index)
+    {
+        _index = index;
+    }
+
+    public string Url { get; set; } = string.Empty;
+    public DateTime ExpireDateTimeUtc { get; set; }
+
+    public void Dispose()
+    {
+        if (_index < 0) return;
+        FileLinkArrayPool.Return(this, _index);
+        _index = -1;
+    }
 }

@@ -4,11 +4,11 @@ public interface IStorageService
 {
     public string Name { get; }
 
-    Task<FileLink> PutAsync(Stream stream, string path, string name);
+    ValueTask<FileLink> PutAsync(Stream stream, string path, string name);
 
-    Task GetAsync(string path, string name, Action<Stream> stream);
+    ValueTask GetAsync(string path, string name, Action<Stream> stream);
 
-    Task<FileLink> RefreshLinkAsync(string path, string name);
+    ValueTask<FileLink> RefreshLinkAsync(string path, string name);
 
-    Task DeleteAsync(string path, string name);
+    ValueTask DeleteAsync(string path, string name);
 }
