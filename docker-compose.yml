@@ -1,0 +1,15 @@
+services:
+  orion:
+    container_name: orion
+    build:
+      context: .
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 20g
+    ports:
+      - "5161:5161"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
